@@ -502,6 +502,7 @@ subroutine chem_surfvals_set_all()
    real(r8) doydatap             ! day or year for input data yrdata(nyrp)
    real(r8) deltat               ! delta time
    real(r8) fact1, fact2         ! time interpolation factors
+'
 !PMA   real(r8) cfcscl               ! cfc scale factor for f11
    real(r8) cfcscl,co2mmr,rmwco2               ! cfc scale factor for f11
 
@@ -556,7 +557,9 @@ subroutine chem_surfvals_set_all()
 ! below and comment the call to endrun and previous write
 !
    if (nyrp > ntim) then
+
 !PMA      call endrun ('chem_surfvals_set_all: error - current date is past the end of valid data')
+
 !         write(iulog,*)'chem_surfvals_set_all: using ghg data for ',yrdata(ntim)
          co2vmr = co2(ntim)*1.e-06
          ch4vmr = ch4(ntim)*1.e-09
