@@ -1,8 +1,8 @@
 &input
-srfFileName =  '1x1d.nc'
-atmFileName = 'ne30np4_pentagons.091226.nc'
-landFileName = 'regrid_vegetation.nc' 
-soilwFileName = 'clim_soilw.nc'
-srf2atmFmapname = 'map_1x1_to_ne30np4_aave.nc'
-outputFileName = 'atmsrf_ne30np4_101206.nc'
+srfFileName = '/project/projectdirs/e3sm/mapping/grids/1x1d.nc'
+landFileName = '/global/cfs/cdirs/e3sm/inputdata/atm/cam/chem/trop_mozart/dvel/regrid_vegetation.nc'
+soilwFileName = '/global/cfs/cdirs/e3sm/inputdata/atm/cam/chem/trop_mozart/dvel/clim_soilw.nc'
+atmFileName = '/global/cscratch1/sd/cbeall/e3sm/grids/sox8v3pg2/sox8v3pg2_scrip.nc'
+srf2atmFmapname = '/global/cscratch1/sd/cbeall/e3sm/grids/sox8v3pg2/map_1x1_to_sox8v3pg2_mono.nc'
+outputFileName = '/global/cscratch1/sd/cbeall/e3sm/grids/sox8v3pg2/atmsrf_sox8v3pg2_20220218_n4.nc'
 /

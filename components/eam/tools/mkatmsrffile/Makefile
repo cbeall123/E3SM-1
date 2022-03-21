@@ -11,10 +11,12 @@
 #-------------------------------------
 
 ifeq ($(FC),$(null))
-   FC := ifort
+   #FC := ifort
+    FC = ftn
 endif
 
-NETCDF_PATH := $(NETCDF_HOME)
+#NETCDF_PATH := $(NETCDF_HOME)
+NETCDF_ROOT = /opt/cray/pe/netcdf-hdf5parallel/4.6.3.2/INTEL/19.0
 
 EXE := mkatmsrffile
 

@@ -19,7 +19,7 @@ main() {
 
 # Machine and project
 readonly MACHINE=cori-knl
-readonly PROJECT="e3sm"
+readonly PROJECT="m3525"
 
 # Simulation
 readonly COMPSET="WCYCL1850"
