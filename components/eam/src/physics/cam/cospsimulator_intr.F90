@@ -582,8 +582,8 @@ slwc_ncot_int = SLWC_NCOT
        lisccp_sim = .true.
        lmisr_sim = .true.
        lmodis_sim = .true.
-       cosp_ncolumns = 10
-       !cosp_ncolumns = 50 !CB
+       !cosp_ncolumns = 10
+       cosp_ncolumns = 50 !CMB
        !cosp_nradsteps = 3
     end if
     
@@ -1216,8 +1216,10 @@ slwc_ncot_int = SLWC_NCOT
        ! frac_out (time,height_mlev,column,profile)
        call addfld ('SCOPS_OUT',(/'cosp_scol','lev      '/),'I','0=nocld,1=strcld,2=cnvcld','SCOPS Subcolumn output', &
             flag_xyfill=.true., fill_value=R_UNDEF)
+
        !! add scops ouptut to history file specified by the CAM namelist variable cosp_histfile_num
        call add_default ('SCOPS_OUT',cosp_histfile_num,' ')
+
        ! save sub-column outputs from ISCCP if ISCCP is run
        if (lisccp_sim) then
           call add_default ('TAU_ISCCP',cosp_histfile_num,' ')
@@ -1232,6 +1234,19 @@ slwc_ncot_int = SLWC_NCOT
           call add_default ('DBZE_CS',cosp_histfile_num,' ')
        end if
     end if
+    
+    ! CMB Adding SCOPS_OUT variables for monthly accumulation
+    call addfld ('LS_SCOPSOUT',(/'cosp_scol','lev      '/),'A','0=nocld,1=strcld','LS component of SCOPS Subcolumn output', &
+            flag_xyfill=.true., fill_value=R_UNDEF)
+    call addfld ('CV_SCOPSOUT',(/'cosp_scol','lev      '/),'A','0=nocld,1=cnvcld','CV component of SCOPS Subcolumn output', &
+            flag_xyfill=.true., fill_value=R_UNDEF)
+    call addfld ('CTOT_SCOPSOUT',(/'cosp_scol','lev      '/),'A','0=nocld,1=strcld or cnvld','Cloud component of SCOPS Subcolumn output', &
+            flag_xyfill=.true., fill_value=R_UNDEF)
+    call add_default ('LS_SCOPSOUT',cosp_histfile_num,' ')
+    call add_default ('CV_SCOPSOUT',cosp_histfile_num,' ')
+    call add_default ('CTOT_SCOPSOUT',cosp_histfile_num,' ')
+
+
     
     !! ADDFLD, ADD_DEFAULT, OUTFLD CALLS FOR COSP OUTPUTS IF RUNNING COSP OFF-LINE
     !! Note: A suggestion was to add all of the CAM variables needed to add to make it possible to run COSP off-line
@@ -1680,6 +1695,9 @@ slwc_ncot_int = SLWC_NCOT
     real(r8) :: cld_misr(pcols,nhtmisr_cosp*ntau_cosp)   ! CAM clMISR (time,tau,CTH_height_bin,profile)
     real(r8) :: refl_parasol(pcols,nsza_cosp)            ! CAM parasol_refl (time,sza,profile)
     real(r8) :: scops_out(pcols,nhtml_cosp*nscol_cosp)   ! CAM frac_out (time,height_mlev,column,profile)
+    real(r8) :: ls_scopsout(pcols,nhtml_cosp*nscol_cosp) ! CAM ls stratiform component of frac_out (time, height_mlev,column)
+    real(r8) :: cv_scopsout(pcols,nhtml_cosp*nscol_cosp) ! CAM cv component of frac_out (time, height_mlev,column)
+    real(r8) :: ctot_scopsout(pcols,nhtml_cosp*nscol_cosp) ! CAM cloud component of frac_out (time, height_mlev,column)
     real(r8) :: cltmodis(pcols)
     real(r8) :: clwmodis(pcols)
     real(r8) :: climodis(pcols)
@@ -1888,6 +1906,9 @@ slwc_ncot_int = SLWC_NCOT
     cld_misr(1:pcols,1:nhtmisr_cosp*ntau_cosp)       = R_UNDEF
     refl_parasol(1:pcols,1:nsza_cosp)                = R_UNDEF
     scops_out(1:pcols,1:nhtml_cosp*nscol_cosp)       = R_UNDEF
+    ls_scopsout(1:pcols,1:nhtml_cosp*nscol_cosp)     = R_UNDEF
+    cv_scopsout(1:pcols,1:nhtml_cosp*nscol_cosp)     = R_UNDEF
+    ctot_scopsout(1:pcols,1:nhtml_cosp*nscol_cosp)   = R_UNDEF
     cltmodis(1:pcols)                                = R_UNDEF
     clwmodis(1:pcols)                                = R_UNDEF
     climodis(1:pcols)                                = R_UNDEF
@@ -2996,7 +3017,30 @@ slwc_ncot_int = SLWC_NCOT
          call outfld('SLWC_COT3', slwc_cot3, pcols, lchnk)
          call outfld('SLWC_COT4', slwc_cot4, pcols, lchnk)
     endif    
-    
+    ! CMB Accumulating scops_out to approximate cloud fraction
+    where (scops_out .eq. 1) 
+       ls_scopsout = 1 
+    end where
+
+    where (scops_out .eq. 0) 
+       ls_scopsout = 0 
+    end where
+
+    where (scops_out .eq. 2) 
+       cv_scopsout = 1 
+    end where
+
+    where (scops_out .eq. 0) 
+       cv_scopsout = 0 
+    end where
+
+    where ((scops_out .eq. 1) .or. (scops_out .eq. 2))
+       ctot_scopsout = 1 
+    end where
+
+    where (scops_out .eq. 0) 
+       ctot_scopsout = 0 
+    end where
     
     ! MISR SIMULATOR OUTPUTS
     if (lmisr_sim) then
@@ -3131,6 +3175,10 @@ slwc_ncot_int = SLWC_NCOT
           call outfld('DBZE_CS',dbze_cs,pcols,lchnk) !! fails check_accum if 'A'
        end if
     end if
+    call outfld('LS_SCOPSOUT',ls_scopsout   ,pcols,lchnk)!!!CMB, should work with accum
+    call outfld('CV_SCOPSOUT',cv_scopsout   ,pcols,lchnk)!!!CMB 
+    call outfld('CTOT_SCOPSOUT',ctot_scopsout   ,pcols,lchnk)!!!CMB
+
     call t_stopf("writing_output")
 #endif
   end subroutine cospsimulator_intr_run
