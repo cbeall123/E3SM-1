@@ -1120,19 +1120,50 @@ slwc_ncot_int = SLWC_NCOT
         call addfld ('CFODD_NTOTAL3_CS',(/'cosp_cfodd_dbze','cosp_cfodd_icod' /),&
              'A','1','# of CFODD (18 < Reff < 35 micron)', flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld ('CFODD_NTOTAL4_CS',(/'cosp_cfodd_dbze','cosp_cfodd_icod' /),&
-             'A','1','# of CFODD CALIPSO detected', flag_xyfill=.true., fill_value=R_UNDEF)
+             'A','1','# of CFODD MODIS small reff, cold cloud top', flag_xyfill=.true., fill_value=R_UNDEF)
+        ! call addfld ('CFODD_NTOTAL5_CS',(/'cosp_cfodd_dbze','cosp_cfodd_icod' /),&
+        !      'A','1','# of CFODD MODIS, med reff, cold cloud top ', flag_xyfill=.true., fill_value=R_UNDEF)
+        ! call addfld ('CFODD_NTOTAL6_CS',(/'cosp_cfodd_dbze','cosp_cfodd_icod' /),&
+        !      'A','1','# of CFODD MODIS, large reff, cold cloud top ', flag_xyfill=.true., fill_value=R_UNDEF)
+        ! call addfld ('CFODD_NTOTAL7_CS',(/'cosp_cfodd_dbze','cosp_cfodd_icod' /),&
+        !      'A','1','# of CFODD MODIS, small reff, cold ct and multil ', flag_xyfill=.true., fill_value=R_UNDEF)
+        ! call addfld ('CFODD_NTOTAL8_CS',(/'cosp_cfodd_dbze','cosp_cfodd_icod' /),&
+        !      'A','1','# of CFODD MODIS, med reff, cold ct and multil ', flag_xyfill=.true., fill_value=R_UNDEF)
+        ! call addfld ('CFODD_NTOTAL9_CS',(/'cosp_cfodd_dbze','cosp_cfodd_icod' /),&
+        !      'A','1','# of CFODD MODIS, large reff, cold ct and multil ', flag_xyfill=.true., fill_value=R_UNDEF)
+        ! call addfld ('CFODD_NTOTAL10_CS',(/'cosp_cfodd_dbze','cosp_cfodd_icod' /),&
+        !      'A','1','# of CFODD detected by CALIPSO ', flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld ('SLWC_COT1',(/'cosp_slwc_cot' /),&
-             'A','1','# of SLWCs (05 < Reff < 12 micron) binned by MODIS cloud optical thickness', flag_xyfill=.true.,&
-             fill_value=R_UNDEF)
+             'A','1',&
+             '# of SLWCs (05 < Reff < 12 micron) binned by MODIS cloud optical thickness',&
+             flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld ('SLWC_COT2',(/'cosp_slwc_cot' /), 'A','1',&
-             '# of SLWCs (12 < Reff < 18 micron) binned by MODIS cloud optical thickness', flag_xyfill=.true.,&
-             fill_value=R_UNDEF)
+             '# of SLWCs (12 < Reff < 18 micron) binned by MODIS cloud optical thickness',&
+             flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld ('SLWC_COT3',(/'cosp_slwc_cot' /), 'A','1',&
-             '# of SLWCs (18 < Reff < 35 micron) binned by MODIS cloud optical thickness', flag_xyfill=.true.,&
-             fill_value=R_UNDEF)
+             '# of SLWCs (18 < Reff < 35 micron) binned by MODIS cloud optical thickness',&
+             flag_xyfill=.true.,fill_value=R_UNDEF)
         call addfld ('SLWC_COT4',(/'cosp_slwc_cot' /), 'A','1',&
-             '# of SLWCs binned by CALIPSO cloud optical thickness', flag_xyfill=.true.,&
-             fill_value=R_UNDEF)
+             '# of SLWCs small Reff, cold cloud top, binned by MODIS cloud optical thickness',&
+             flag_xyfill=.true., fill_value=R_UNDEF)
+!        call addfld ('SLWC_COT5',(/'cosp_slwc_cot' /), 'A','1',&
+!             '# of SLWCs med Reff, cold cloud top, binned by MODIS cloud optical thickness',&
+!             flag_xyfill=.true., fill_value=R_UNDEF)
+        ! call addfld ('SLWC_COT6',(/'cosp_slwc_cot' /), 'A','1',&
+        !      '# of SLWCs large Reff, cold cloud top, binned by MODIS cloud optical thickness',&
+        !      flag_xyfill=.true., fill_value=R_UNDEF)
+        ! call addfld ('SLWC_COT7',(/'cosp_slwc_cot' /), 'A','1',&
+        !      '# of SLWCs small Reff, cold ct, multil, binned by MODIS cloud optical thickness',&
+        !      flag_xyfill=.true.,fill_value=R_UNDEF)
+        ! call addfld ('SLWC_COT8',(/'cosp_slwc_cot' /), 'A','1',&
+        !      '# of SLWCs med Reff, cold ct, multil, binned by MODIS cloud optical thickness',&
+        !      flag_xyfill=.true.,fill_value=R_UNDEF)
+        ! call addfld ('SLWC_COT9',(/'cosp_slwc_cot' /), 'A','1',&
+        !      '# of SLWCs large Reff, cold ct, multil, binned by MODIS cloud optical thickness',&
+        !      flag_xyfill=.true., fill_value=R_UNDEF)
+        ! call addfld ('SLWC_COT10',(/'cosp_slwc_cot' /), 'A','1',&
+        !      '# of SLWCs binned by CALIPSO cloud optical thickness', flag_xyfill=.true.,&
+        !      fill_value=R_UNDEF)
 
         ! axes for CFODD - I think you don't need this because its a history coordinate
         ! float CFODD_NDBZE (cfodd_ndbze) cloudsat_equivalent_reflectivity_factor
@@ -1152,22 +1183,40 @@ slwc_ncot_int = SLWC_NCOT
         call add_default ('CFODD_NTOTAL2_CS',cosp_histfile_num, ' ')
         call add_default ('CFODD_NTOTAL3_CS',cosp_histfile_num, ' ')
         call add_default ('CFODD_NTOTAL4_CS',cosp_histfile_num, ' ')
+        ! call add_default ('CFODD_NTOTAL5_CS',cosp_histfile_num, ' ')
+        ! call add_default ('CFODD_NTOTAL6_CS',cosp_histfile_num, ' ')
+        ! call add_default ('CFODD_NTOTAL7_CS',cosp_histfile_num, ' ')
+        ! call add_default ('CFODD_NTOTAL8_CS',cosp_histfile_num, ' ')
+        ! call add_default ('CFODD_NTOTAL9_CS',cosp_histfile_num, ' ')
+        ! call add_default ('CFODD_NTOTAL10_CS',cosp_histfile_num, ' ')
         call add_default ('SLWC_COT1',cosp_histfile_num,' ')
         call add_default ('SLWC_COT2',cosp_histfile_num,' ')
         call add_default ('SLWC_COT3',cosp_histfile_num,' ')
         call add_default ('SLWC_COT4',cosp_histfile_num,' ')
+        ! call add_default ('SLWC_COT5',cosp_histfile_num,' ')
+        ! call add_default ('SLWC_COT6',cosp_histfile_num,' ')
+        ! call add_default ('SLWC_COT7',cosp_histfile_num,' ')
+        ! call add_default ('SLWC_COT8',cosp_histfile_num,' ')
+        ! call add_default ('SLWC_COT9',cosp_histfile_num,' ')
+        ! call add_default ('SLWC_COT10',cosp_histfile_num,' ')
         !call add_default ('CFODD_NDBZE',cosp_histfile_num, ' ')
         !call add_default ('CFODD_NICOD',cosp_histfile_num, ' ')
         
         !Warm-rain occurrence frequency diagnostics
         ! int npdfcld (loc), "number_of_slwc_nonprecip"
-        call addfld ('npdfcld', horiz_only, 'I', '1', '# of Non-Precipitating Clouds', flag_xyfill=.true., fill_value=R_UNDEF)
-        
+        call addfld ('npdfcld', horiz_only, 'A', '1', '# of Non-Precipitating Clouds',&
+             flag_xyfill=.true., fill_value=R_UNDEF)
+!       call addfld ('npdfcldc', horiz_only, 'A', '1', '# of Non-Precipitating Clouds, cold ct', flag_xyfill=.true., fill_value=R_UNDEF)
+!	call addfld ('npdfcldc_m', horiz_only, 'A', '1', '# of Non-Precipitating Clouds, cold ct, multil', flag_xyfill=.true., fill_value=R_UNDEF)
         !CB Continue here adding npdfdrz and npdfrain 
         ! int npdfdrz (loc), "number_of_slwc_drizzle"
         call addfld ('npdfdrz', horiz_only, 'A', '1', '# of Drizzling Clouds"', flag_xyfill=.true., fill_value=R_UNDEF)
+!        call addfld ('npdfdrzc', horiz_only, 'A', '1', '# of Drizzling Clouds, cold ct"', flag_xyfill=.true., fill_value=R_UNDEF)
+!        call addfld ('npdfdrzc_m', horiz_only, 'A', '1', '# of Drizzling Clouds, coldct, multil"', flag_xyfill=.true., fill_value=R_UNDEF)
         ! int npdfrain (loc), "number_of_slwc_precip"
         call addfld ('npdfrain', horiz_only, 'A', '1', '# of Precipitating Clouds"', flag_xyfill=.true., fill_value=R_UNDEF)
+!        call addfld ('npdfrainc', horiz_only, 'A', '1', '# of Precipitating Clouds, cold ct"', !flag_xyfill=.true., fill_value=R_UNDEF)
+!        call addfld ('npdfrainc_m', horiz_only, 'A', '1', '# of Precipitating Clouds, cold ct, multil"', flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld ('npdfcld_cal', horiz_only, 'A', '1', '# of Non-Precipitating Clouds CALIPSO only"', flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld ('npdfdrz_cal', horiz_only, 'A', '1', '# of Drizzling Clouds CALIPSO only"', flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld ('npdfrain_cal', horiz_only, 'A', '1', '# of Precipitating Clouds CALIPSO only"', flag_xyfill=.true., fill_value=R_UNDEF)
@@ -1179,18 +1228,26 @@ slwc_ncot_int = SLWC_NCOT
         call addfld('lsmallreff', horiz_only, 'A', '1', '# of Liquid Clouds with Reff below lower threshold', flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld('lbigreff', horiz_only, 'A', '1', '# of Liquid Clouds with Reff above upper threshold', flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld('nmultilcld', horiz_only, 'A', '1', '# of Subcolumns with Multilayer Clouds excluded from SLWC analysis - MODIS/CloudSat', flag_xyfill=.true., fill_value=R_UNDEF)
+        call addfld('nfracmulti', horiz_only, 'A', '1', '# of Subcolumns with Multilayer Clouds -fracout ', flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld('nmultilcld_cal', horiz_only, 'A', '1', '# of Subcolumns with Multilayer Clouds excluded from SLWC analysis - CALIPSO/CloudSat', flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld('nhetcld', horiz_only, 'A', '1', '# of Subcolumns with Heterogeneous Clouds excluded from SLWC analysis -MODIS/CloudSat', flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld('nhetcld_cal', horiz_only, 'A', '1', '# of Subcolumns with Heterogeneous Clouds excluded from SLWC analysis - CALIPSO/CloudSat', flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld('coldct', horiz_only, 'A', '1', '# of Subcolumns with Cloud Top Temp < 273 K excluded from SLWC analysis', flag_xyfill=.true., fill_value=R_UNDEF)
-        call addfld('coldct_cal', horiz_only, 'A', '1', '# of Subcolumns with Cloud Top Temp < 273 K excluded from SLWC analysis, detected by CALIPSO/CloudSat', flag_xyfill=.true., fill_value=R_UNDEF)
+        call addfld('coldct_cal', horiz_only, 'A', '1', '# of Subcolumns with Cloud Top Temp < 273 K excluded from SLWC analysis, detected by CALIPSO/CloudSat',&
+                     flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld('calice', horiz_only, 'A', '1', '# of Subcolumns with ice detected by CALIPSO', flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld('obs_ntotal1', horiz_only, 'A', '1', '# of total observations from warmrain diags', flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld('obs_ntotal2', horiz_only, 'A', '1', '# of clear-sky observations from warmrain diags', flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld('obs_ntotal3', horiz_only, 'A', '1', '# of cloud-sky observations from warmrain diags', flag_xyfill=.true., fill_value=R_UNDEF)
         call add_default('npdfcld',cosp_histfile_num,' ')
+!        call add_default('npdfcldc',cosp_histfile_num,' ')
+!        call add_default('npdfcldc_m',cosp_histfile_num,' ')
         call add_default('npdfdrz',cosp_histfile_num,' ')
+!        call add_default('npdfdrzc',cosp_histfile_num,' ')
+!        call add_default('npdfdrzc_m',cosp_histfile_num,' ')
         call add_default('npdfrain',cosp_histfile_num,' ')
+!        call add_default('npdfrainc',cosp_histfile_num,' ')
+!        call add_default('npdfrainc_m',cosp_histfile_num,' ')
         call add_default('npdfcld_cal',cosp_histfile_num,' ')
         call add_default('npdfdrz_cal',cosp_histfile_num,' ')
         call add_default('npdfrain_cal',cosp_histfile_num,' ')
@@ -1200,6 +1257,7 @@ slwc_ncot_int = SLWC_NCOT
         call add_default('lbigreff',cosp_histfile_num,' ')
         call add_default('nmultilcld',cosp_histfile_num, ' ')
         call add_default('nmultilcld_cal',cosp_histfile_num, ' ')
+        call add_default('nfracmulti',cosp_histfile_num, ' ')
         call add_default('nhetcld',cosp_histfile_num,' ')
         call add_default('nhetcld_cal',cosp_histfile_num,' ')
         call add_default('coldct',cosp_histfile_num, ' ')
@@ -1728,17 +1786,41 @@ slwc_ncot_int = SLWC_NCOT
     real(r8) :: cfodd_ntotal2(pcols,CFODD_NDBZE,CFODD_NICOD)
     real(r8) :: cfodd_ntotal3(pcols,CFODD_NDBZE,CFODD_NICOD)
     real(r8) :: cfodd_ntotal4(pcols,CFODD_NDBZE,CFODD_NICOD)
+    ! real(r8) :: cfodd_ntotal5(pcols,CFODD_NDBZE,CFODD_NICOD)
+    ! real(r8) :: cfodd_ntotal6(pcols,CFODD_NDBZE,CFODD_NICOD)
+    ! real(r8) :: cfodd_ntotal7(pcols,CFODD_NDBZE,CFODD_NICOD)
+    ! real(r8) :: cfodd_ntotal8(pcols,CFODD_NDBZE,CFODD_NICOD)
+    ! real(r8) :: cfodd_ntotal9(pcols,CFODD_NDBZE,CFODD_NICOD)
+    ! real(r8) :: cfodd_ntotal10(pcols,CFODD_NDBZE,CFODD_NICOD)
     real(r8) :: cfodd_ntotal1_cs(pcols,CFODD_NDBZE*CFODD_NICOD)
     real(r8) :: cfodd_ntotal2_cs(pcols,CFODD_NDBZE*CFODD_NICOD)
     real(r8) :: cfodd_ntotal3_cs(pcols,CFODD_NDBZE*CFODD_NICOD)
     real(r8) :: cfodd_ntotal4_cs(pcols,CFODD_NDBZE*CFODD_NICOD)
+    ! real(r8) :: cfodd_ntotal5_cs(pcols,CFODD_NDBZE*CFODD_NICOD)
+    ! real(r8) :: cfodd_ntotal6_cs(pcols,CFODD_NDBZE*CFODD_NICOD)
+    ! real(r8) :: cfodd_ntotal7_cs(pcols,CFODD_NDBZE*CFODD_NICOD)
+    ! real(r8) :: cfodd_ntotal8_cs(pcols,CFODD_NDBZE*CFODD_NICOD)
+    ! real(r8) :: cfodd_ntotal9_cs(pcols,CFODD_NDBZE*CFODD_NICOD)
+    ! real(r8) :: cfodd_ntotal10_cs(pcols,CFODD_NDBZE*CFODD_NICOD)
     real(r8) :: slwc_cot1(pcols,SLWC_NCOT)
     real(r8) :: slwc_cot2(pcols,SLWC_NCOT)
     real(r8) :: slwc_cot3(pcols,SLWC_NCOT)
     real(r8) :: slwc_cot4(pcols,SLWC_NCOT)
+    ! real(r8) :: slwc_cot5(pcols,SLWC_NCOT)
+    ! real(r8) :: slwc_cot6(pcols,SLWC_NCOT)
+    ! real(r8) :: slwc_cot7(pcols,SLWC_NCOT)
+    ! real(r8) :: slwc_cot8(pcols,SLWC_NCOT)
+    ! real(r8) :: slwc_cot9(pcols,SLWC_NCOT)
+    ! real(r8) :: slwc_cot10(pcols,SLWC_NCOT)
     real(r8) :: npdfcld(pcols)
+!    real(r8) :: npdfcldc(pcols)
+!   real(r8) :: npdfcldc_m(pcols)
     real(r8) :: npdfdrz(pcols)
+!    real(r8) :: npdfdrzc(pcols)
+!    real(r8) :: npdfdrzc_m(pcols)
     real(r8) :: npdfrain(pcols)
+!    real(r8) :: npdfrainc(pcols)
+!    real(r8) :: npdfrainc_m(pcols)
     real(r8) :: npdfcld_cal(pcols)
     real(r8) :: npdfdrz_cal(pcols)
     real(r8) :: npdfrain_cal(pcols)
@@ -1749,6 +1831,7 @@ slwc_ncot_int = SLWC_NCOT
     real(r8) :: nmultilcld(pcols)
     real(r8) :: nhetcld(pcols)
     real(r8) :: nmultilcld_cal(pcols)
+    real(r8) :: nfracmulti(pcols)
     real(r8) :: nhetcld_cal(pcols)
     real(r8) :: coldct(pcols)
     real(r8) :: coldct_cal(pcols)
@@ -1803,10 +1886,22 @@ slwc_ncot_int = SLWC_NCOT
     cfodd_ntotal2(1:pcols,1:CFODD_NDBZE,1:CFODD_NICOD) = R_UNDEF
     cfodd_ntotal3(1:pcols,1:CFODD_NDBZE,1:CFODD_NICOD) = R_UNDEF
     cfodd_ntotal4(1:pcols,1:CFODD_NDBZE,1:CFODD_NICOD) = R_UNDEF
+    ! cfodd_ntotal5(1:pcols,1:CFODD_NDBZE,1:CFODD_NICOD) = R_UNDEF
+    ! cfodd_ntotal6(1:pcols,1:CFODD_NDBZE,1:CFODD_NICOD) = R_UNDEF
+    ! cfodd_ntotal7(1:pcols,1:CFODD_NDBZE,1:CFODD_NICOD) = R_UNDEF
+    ! cfodd_ntotal8(1:pcols,1:CFODD_NDBZE,1:CFODD_NICOD) = R_UNDEF
+    ! cfodd_ntotal9(1:pcols,1:CFODD_NDBZE,1:CFODD_NICOD) = R_UNDEF
+    ! cfodd_ntotal10(1:pcols,1:CFODD_NDBZE,1:CFODD_NICOD) = R_UNDEF
     slwc_cot1(1:pcols,1:SLWC_NCOT)      = R_UNDEF
     slwc_cot2(1:pcols,1:SLWC_NCOT)      = R_UNDEF
     slwc_cot3(1:pcols,1:SLWC_NCOT)      = R_UNDEF
     slwc_cot4(1:pcols,1:SLWC_NCOT)      = R_UNDEF
+    ! slwc_cot5(1:pcols,1:SLWC_NCOT)      = R_UNDEF
+    ! slwc_cot6(1:pcols,1:SLWC_NCOT)      = R_UNDEF
+    ! slwc_cot7(1:pcols,1:SLWC_NCOT)      = R_UNDEF
+    ! slwc_cot8(1:pcols,1:SLWC_NCOT)      = R_UNDEF
+    ! slwc_cot9(1:pcols,1:SLWC_NCOT)      = R_UNDEF
+    ! slwc_cot10(1:pcols,1:SLWC_NCOT)      = R_UNDEF
     
     
     ! (all CAM output variables. including collapsed variables)
@@ -1859,9 +1954,21 @@ slwc_ncot_int = SLWC_NCOT
     cfodd_ntotal2_cs(1:pcols,1:CFODD_NDBZE*CFODD_NICOD) = R_UNDEF
     cfodd_ntotal3_cs(1:pcols,1:CFODD_NDBZE*CFODD_NICOD) = R_UNDEF
     cfodd_ntotal4_cs(1:pcols,1:CFODD_NDBZE*CFODD_NICOD) = R_UNDEF
+    ! cfodd_ntotal5_cs(1:pcols,1:CFODD_NDBZE*CFODD_NICOD) = R_UNDEF
+    ! cfodd_ntotal6_cs(1:pcols,1:CFODD_NDBZE*CFODD_NICOD) = R_UNDEF
+    ! cfodd_ntotal7_cs(1:pcols,1:CFODD_NDBZE*CFODD_NICOD) = R_UNDEF
+    ! cfodd_ntotal8_cs(1:pcols,1:CFODD_NDBZE*CFODD_NICOD) = R_UNDEF
+    ! cfodd_ntotal9_cs(1:pcols,1:CFODD_NDBZE*CFODD_NICOD) = R_UNDEF
+    ! cfodd_ntotal10_cs(1:pcols,1:CFODD_NDBZE*CFODD_NICOD) = R_UNDEF
     npdfcld(1:pcols)                                 = R_UNDEF
+!    npdfcldc(1:pcols)                                = R_UNDEF
+!    npdfcldc_m(1:pcols)                              = R_UNDEF
     npdfdrz(1:pcols)                                 = R_UNDEF
+!    npdfdrzc(1:pcols)                                = R_UNDEF
+!    npdfdrzc_m(1:pcols)                              = R_UNDEF
     npdfrain(1:pcols)                                = R_UNDEF
+!    npdfrainc(1:pcols)                               = R_UNDEF
+!    npdfrainc_m(1:pcols)                             = R_UNDEF
     npdfcld_cal(1:pcols)                             = R_UNDEF
     npdfdrz_cal(1:pcols)                             = R_UNDEF
     npdfrain_cal(1:pcols)                            = R_UNDEF
@@ -1870,6 +1977,7 @@ slwc_ncot_int = SLWC_NCOT
     lsmallreff(1:pcols)                              = R_UNDEF
     lbigreff(1:pcols)                                = R_UNDEF
     nmultilcld(1:pcols)                              = R_UNDEF
+    nfracmulti(1:pcols)                              = R_UNDEF
     nhetcld(1:pcols)                                 = R_UNDEF
     nmultilcld_cal(1:pcols)                          = R_UNDEF
     nhetcld_cal(1:pcols)                             = R_UNDEF
@@ -2663,17 +2771,30 @@ slwc_ncot_int = SLWC_NCOT
         cfodd_ntotal2(1:ncol,1:CFODD_NDBZE,1:CFODD_NICOD) = cospOUT%cfodd_ntotal(:,:,:,2)
         cfodd_ntotal3(1:ncol,1:CFODD_NDBZE,1:CFODD_NICOD) = cospOUT%cfodd_ntotal(:,:,:,3)
         cfodd_ntotal4(1:ncol,1:CFODD_NDBZE,1:CFODD_NICOD) = cospOUT%cfodd_ntotal(:,:,:,4)
+        ! cfodd_ntotal5(1:ncol,1:CFODD_NDBZE,1:CFODD_NICOD) = cospOUT%cfodd_ntotal(:,:,:,5)
+        ! cfodd_ntotal6(1:ncol,1:CFODD_NDBZE,1:CFODD_NICOD) = cospOUT%cfodd_ntotal(:,:,:,6)
+        ! cfodd_ntotal7(1:ncol,1:CFODD_NDBZE,1:CFODD_NICOD) = cospOUT%cfodd_ntotal(:,:,:,7)
+        ! cfodd_ntotal8(1:ncol,1:CFODD_NDBZE,1:CFODD_NICOD) = cospOUT%cfodd_ntotal(:,:,:,8)
+        ! cfodd_ntotal9(1:ncol,1:CFODD_NDBZE,1:CFODD_NICOD) = cospOUT%cfodd_ntotal(:,:,:,9)
+        ! cfodd_ntotal10(1:ncol,1:CFODD_NDBZE,1:CFODD_NICOD) = cospOUT%cfodd_ntotal(:,:,:,10)
         npdfcld(1:ncol) = cospOUT%wr_occfreq_ntotal(:,1)
         npdfdrz(1:ncol) = cospOUT%wr_occfreq_ntotal(:,2)
         npdfrain(1:ncol) = cospOUT%wr_occfreq_ntotal(:,3)
-        npdfcld_cal(1:ncol) = cospOUT%wr_occfreq_ntotal(:,4)
-        npdfdrz_cal(1:ncol) = cospOUT%wr_occfreq_ntotal(:,5)
-        npdfrain_cal(1:ncol) = cospOUT%wr_occfreq_ntotal(:,6)
+!        npdfcldc(1:ncol) = cospOUT%wr_occfreq_ntotal(:,4)
+!        npdfdrzc(1:ncol) = cospOUT%wr_occfreq_ntotal(:,5)
+!        npdfrainc(1:ncol) = cospOUT%wr_occfreq_ntotal(:,6)
+!        npdfcldc_m(1:ncol) = cospOUT%wr_occfreq_ntotal(:,7)
+!        npdfdrzc_m(1:ncol) = cospOUT%wr_occfreq_ntotal(:,8)
+!        npdfrainc_m(1:ncol) = cospOUT%wr_occfreq_ntotal(:,9)
+        npdfcld_cal(1:ncol) = cospOUT%wr_occfreq_ntotal(:,10)
+        npdfdrz_cal(1:ncol) = cospOUT%wr_occfreq_ntotal(:,11)
+        npdfrain_cal(1:ncol) = cospOUT%wr_occfreq_ntotal(:,12)
         lsmallcot(1:ncol) = cospOUT%lsmallcot(:)
         mice(1:ncol) = cospOUT%mice(:)
         lsmallreff(1:ncol) = cospOUT%lsmallreff(:)
         lbigreff(1:ncol) = cospOUT%lbigreff(:)
         nmultilcld(1:ncol) = cospOUT%nmultilcld(:,1)
+        nfracmulti(1:ncol) = cospOUT%nfracmulti(:)
         nhetcld(1:ncol) = cospOUT%nhetcld(:,1)
         nmultilcld_cal(1:ncol) = cospOUT%nmultilcld(:,2)
         nhetcld_cal(1:ncol) = cospOUT%nhetcld(:,2)
@@ -2687,6 +2808,12 @@ slwc_ncot_int = SLWC_NCOT
         slwc_cot2(1:ncol,1:SLWC_NCOT) = cospOUT%slwccot(:,:,2)
         slwc_cot3(1:ncol,1:SLWC_NCOT) = cospOUT%slwccot(:,:,3)
         slwc_cot4(1:ncol,1:SLWC_NCOT) = cospOUT%slwccot(:,:,4)
+!        slwc_cot5(1:ncol,1:SLWC_NCOT) = cospOUT%slwccot(:,:,5)
+!        slwc_cot6(1:ncol,1:SLWC_NCOT) = cospOUT%slwccot(:,:,6)
+!        slwc_cot7(1:ncol,1:SLWC_NCOT) = cospOUT%slwccot(:,:,7)
+!        slwc_cot8(1:ncol,1:SLWC_NCOT) = cospOUT%slwccot(:,:,8)
+!        slwc_cot9(1:ncol,1:SLWC_NCOT) = cospOUT%slwccot(:,:,9)
+!        slwc_cot10(1:ncol,1:SLWC_NCOT) = cospOUT%slwccot(:,:,10)
     endif
         
         
@@ -2721,6 +2848,12 @@ slwc_ncot_int = SLWC_NCOT
                    cfodd_ntotal2_cs(i,idic) = cfodd_ntotal2(i,id,ih)
                    cfodd_ntotal3_cs(i,idic) = cfodd_ntotal3(i,id,ih)
                    cfodd_ntotal4_cs(i,idic) = cfodd_ntotal4(i,id,ih)
+		   ! cfodd_ntotal5_cs(i,idic) = cfodd_ntotal5(i,id,ih)
+		   ! cfodd_ntotal6_cs(i,idic) = cfodd_ntotal6(i,id,ih)
+		   ! cfodd_ntotal7_cs(i,idic) = cfodd_ntotal7(i,id,ih)
+		   ! cfodd_ntotal8_cs(i,idic) = cfodd_ntotal8(i,id,ih)
+		   ! cfodd_ntotal9_cs(i,idic) = cfodd_ntotal9(i,id,ih)
+		   ! cfodd_ntotal10_cs(i,idic) = cfodd_ntotal10(i,id,ih)
                 end do
             end do
        endif
@@ -2987,14 +3120,53 @@ slwc_ncot_int = SLWC_NCOT
          where (cfodd_ntotal4_cs(:ncol,:CFODD_NDBZE*CFODD_NICOD) .eq. R_UNDEF)
             cfodd_ntotal4_cs(:ncol,:CFODD_NDBZE*CFODD_NICOD) = 0.0_r8
          end where
+
+         ! where (cfodd_ntotal5_cs(:ncol,:CFODD_NDBZE*CFODD_NICOD) .eq. R_UNDEF)
+         !    cfodd_ntotal5_cs(:ncol,:CFODD_NDBZE*CFODD_NICOD) = 0.0_r8
+         ! end where
+
+	 ! where (cfodd_ntotal6_cs(:ncol,:CFODD_NDBZE*CFODD_NICOD) .eq. R_UNDEF)
+         !    cfodd_ntotal6_cs(:ncol,:CFODD_NDBZE*CFODD_NICOD) = 0.0_r8
+         ! end where
+
+	 ! where (cfodd_ntotal7_cs(:ncol,:CFODD_NDBZE*CFODD_NICOD) .eq. R_UNDEF)
+         !    cfodd_ntotal7_cs(:ncol,:CFODD_NDBZE*CFODD_NICOD) = 0.0_r8
+         ! end where
+
+	 ! where (cfodd_ntotal8_cs(:ncol,:CFODD_NDBZE*CFODD_NICOD) .eq. R_UNDEF)
+         !    cfodd_ntotal8_cs(:ncol,:CFODD_NDBZE*CFODD_NICOD) = 0.0_r8
+         ! end where
+
+	 ! where (cfodd_ntotal9_cs(:ncol,:CFODD_NDBZE*CFODD_NICOD) .eq. R_UNDEF)
+         !    cfodd_ntotal9_cs(:ncol,:CFODD_NDBZE*CFODD_NICOD) = 0.0_r8
+         ! end where
+
+	 ! where (cfodd_ntotal10_cs(:ncol,:CFODD_NDBZE*CFODD_NICOD) .eq. R_UNDEF)
+         !    cfodd_ntotal10_cs(:ncol,:CFODD_NDBZE*CFODD_NICOD) = 0.0_r8
+         ! end where
+
+
+
          
          call outfld('CFODD_NTOTAL1_CS', cfodd_ntotal1_cs, pcols, lchnk)
          call outfld('CFODD_NTOTAL2_CS', cfodd_ntotal2_cs, pcols, lchnk)
          call outfld('CFODD_NTOTAL3_CS', cfodd_ntotal3_cs, pcols, lchnk)
          call outfld('CFODD_NTOTAL4_CS', cfodd_ntotal4_cs, pcols, lchnk)
+         ! call outfld('CFODD_NTOTAL5_CS', cfodd_ntotal5_cs, pcols, lchnk)
+         ! call outfld('CFODD_NTOTAL6_CS', cfodd_ntotal6_cs, pcols, lchnk)
+         ! call outfld('CFODD_NTOTAL7_CS', cfodd_ntotal7_cs, pcols, lchnk)
+         ! call outfld('CFODD_NTOTAL8_CS', cfodd_ntotal8_cs, pcols, lchnk)
+         ! call outfld('CFODD_NTOTAL9_CS', cfodd_ntotal9_cs, pcols, lchnk)
+         ! call outfld('CFODD_NTOTAL10_CS', cfodd_ntotal10_cs, pcols, lchnk)
          call outfld('npdfcld', npdfcld, pcols, lchnk)
          call outfld('npdfdrz', npdfdrz, pcols, lchnk)
          call outfld('npdfrain', npdfrain, pcols, lchnk)
+!         call outfld('npdfcldc', npdfcldc, pcols, lchnk)
+!         call outfld('npdfdrzc', npdfdrzc, pcols, lchnk)
+!         call outfld('npdfrainc', npdfrainc, pcols, lchnk)
+!         call outfld('npdfcldc_m', npdfcldc_m, pcols, lchnk)
+!         call outfld('npdfdrzc_m', npdfdrzc_m, pcols, lchnk)
+!         call outfld('npdfrainc_m', npdfrainc_m, pcols, lchnk)
          call outfld('npdfcld_cal', npdfcld_cal, pcols, lchnk)
          call outfld('npdfdrz_cal', npdfdrz_cal, pcols, lchnk)
          call outfld('npdfrain_cal', npdfrain_cal, pcols, lchnk)
@@ -3003,6 +3175,7 @@ slwc_ncot_int = SLWC_NCOT
          call outfld('lsmallreff', lsmallreff, pcols, lchnk)
          call outfld('lbigreff', lbigreff, pcols, lchnk)
          call outfld('nmultilcld', nmultilcld, pcols, lchnk)
+         call outfld('nfracmulti', nfracmulti, pcols, lchnk)
          call outfld('nmultilcld_cal', nmultilcld_cal, pcols, lchnk)
          call outfld('nhetcld_cal', nhetcld_cal, pcols, lchnk)
          call outfld('nhetcld', nhetcld, pcols, lchnk)
@@ -3016,6 +3189,12 @@ slwc_ncot_int = SLWC_NCOT
          call outfld('SLWC_COT2', slwc_cot2, pcols, lchnk)
          call outfld('SLWC_COT3', slwc_cot3, pcols, lchnk)
          call outfld('SLWC_COT4', slwc_cot4, pcols, lchnk)
+!         call outfld('SLWC_COT5', slwc_cot5, pcols, lchnk)
+!         call outfld('SLWC_COT6', slwc_cot6, pcols, lchnk)
+!         call outfld('SLWC_COT7', slwc_cot7, pcols, lchnk)
+!         call outfld('SLWC_COT8', slwc_cot8, pcols, lchnk)
+!         call outfld('SLWC_COT9', slwc_cot9, pcols, lchnk)
+!         call outfld('SLWC_COT10', slwc_cot10, pcols, lchnk)
     endif    
     ! CMB Accumulating scops_out to approximate cloud fraction
     where (scops_out .eq. 1) 
@@ -3846,6 +4025,7 @@ allocate(x%mice(Npoints))
 allocate(x%lsmallreff(Npoints))
 allocate(x%lbigreff(Npoints))
 allocate(x%nmultilcld(Npoints,2))
+allocate(x%nfracmulti(Npoints))
 allocate(x%nhetcld(Npoints,2))
 allocate(x%coldct(Npoints))
 allocate(x%coldct_cal(Npoints))
@@ -4190,6 +4370,10 @@ allocate(x%slwccot(Npoints,SLWC_NCOT,CFODD_NCLASS))
      if (associated(y%nmultilcld)) then
         deallocate(y%nmultilcld)
         nullify(y%nmultilcld)
+     endif
+     if (associated(y%nfracmulti)) then
+        deallocate(y%nfracmulti)
+        nullify(y%nfracmulti)
      endif
      if (associated(y%nhetcld)) then
         deallocate(y%nhetcld)
