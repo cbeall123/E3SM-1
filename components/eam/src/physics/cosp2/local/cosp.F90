@@ -313,7 +313,8 @@ MODULE MOD_COSP
           lbigreff => null(),        & ! # of liquid clouds with Reff above upper threshold (Npoints) 
           coldct => null(),         &  ! # of subcolumns excluded from SLWC analysis because of cloud top temp < 273 K
           coldct_cal => null(),      & ! # of subcolumns with cold cloud top temperature detected by CALIPSO (not MODIS)
-          calice => null()             ! # of subcolumns excluded where CALIPSO detected ice (Npoints)
+          calice => null(),          & ! # of subcolumns excluded where CALIPSO detected ice (Npoints)
+          nfracmulti => null()         ! # of multilayer cloud subcolumns counted by fracout, only for MODIS/CloudSat currently
   end type cosp_outputs
 
 CONTAINS
@@ -412,6 +413,7 @@ CONTAINS
          lbigreff(:),            & ! # of liquid clouds with Reff above upper threshold (Npoints)
          nhetcld(:,:),           & ! # of heterogenous clouds (stratocumulus above/below cumulus) in continuous layer, excluded from SLWC counts
          nmultilcld(:,:),        & ! # of multilayer cloud subcolumns, excluded from SLWC counts, 1=MODIS/CloudSat detected, 2=CALIPSO/CloudSat detected
+         nfracmulti(:),          & ! # of subcolumns with multilayer clouds according to fracout, currently MODIS/CloudSat only 
          coldct(:),              & ! # of subcolumns excluded from SLWC counts because of cloud top temp < 273 K
          coldct_cal(:),          & ! # of subcolumns excluded because cold cloud top temp, detected by CALIPSO
          calice(:),              & ! columns excluded where CALIPSO detected ice
@@ -1635,6 +1637,7 @@ CONTAINS
        allocate( lsmallreff(cloudsatIN%Npoints) )
        allocate( lbigreff(cloudsatIN%Npoints) )
        allocate( nmultilcld(cloudsatIN%Npoints, 2) )
+       allocate( nfracmulti(cloudsatIN%Npoints) )
        allocate( nhetcld(cloudsatIN%Npoints, 2) )
        allocate( coldct(cloudsatIN%Npoints) )
        allocate( coldct_cal(cloudsatIN%Npoints) )
@@ -1709,8 +1712,8 @@ CONTAINS
                tautot_liqI, tautot_iceI, cospOUT%calipso_lidarcldphase,       & !! in
                cfodd_ntotal, wr_occfreq_ntotal,                               & !! inout
                lsmallcot, mice, lsmallreff, lbigreff,                         & !! inout
-               nmultilcld, nhetcld, coldct, coldct_cal, calice, obs_ntotal,   & !! inout
-               slwccot       )                                                  !! inout
+               nmultilcld, nfracmulti, nhetcld, coldct, coldct_cal, calice,   & !! inout
+               obs_ntotal, slwccot       )                                     !! inout
           deallocate( zlev, t_in, tempI, frac_outI, Ze_totI )
        else  ! do not use vgrid interporation ---------------------------------------!
           !! original model grid
@@ -1732,8 +1735,8 @@ CONTAINS
                cospOUT%calipso_lidarcldphase,                                 & !! in
                cfodd_ntotal, wr_occfreq_ntotal,                               & !! inout
                lsmallcot, mice, lsmallreff, lbigreff,                         & !! inout
-               nmultilcld, nhetcld, coldct, coldct_cal, calice, obs_ntotal,   & !! inout
-               slwccot       )                                                  !! inout
+               nmultilcld, nfracmulti, nhetcld, coldct, coldct_cal, calice,   & !! inout
+               obs_ntotal, slwccot       )                                      !! inout
        endif  !! use_vgrid or not
 
        ! Store, when necessary
@@ -1757,6 +1760,9 @@ CONTAINS
        endif
        if ( associated(cospOUT%nmultilcld) ) then
           cospOUT%nmultilcld(ij:ik,:) = nmultilcld
+       endif
+       if ( associated(cospOUT%nfracmulti) ) then
+          cospOUT%nfracmulti(ij:ik) = nfracmulti
        endif
        if ( associated(cospOUT%nhetcld) ) then
           cospOUT%nhetcld(ij:ik,:) = nhetcld
@@ -1846,6 +1852,7 @@ CONTAINS
     if (allocated(lsmallreff))            deallocate(lsmallreff)
     if (allocated(lbigreff))              deallocate(lbigreff)
     if (allocated(nhetcld))               deallocate(nhetcld)
+    if (allocated(nfracmulti))            deallocate(nfracmulti)
     if (allocated(nmultilcld))            deallocate(nmultilcld)
     if (allocated(coldct))                deallocate(coldct)
     if (allocated(coldct_cal))            deallocate(coldct_cal)
@@ -2437,6 +2444,7 @@ CONTAINS
              if (associated(cospOUT%lsmallreff)) cospOUT%lsmallreff(:) = R_UNDEF
              if (associated(cospOUT%lbigreff)) cospOUT%lbigreff(:) = R_UNDEF
              if (associated(cospOUT%nmultilcld)) cospOUT%nmultilcld(:,:) = R_UNDEF
+             if (associated(cospOUT%nfracmulti)) cospOUT%nfracmulti(:) = R_UNDEF
              if (associated(cospOUT%nhetcld)) cospOUT%nhetcld(:,:) = R_UNDEF
              if (associated(cospOUT%coldct)) cospOUT%coldct(:) = R_UNDEF
              if (associated(cospOUT%coldct_cal)) cospOUT%coldct_cal(:) = R_UNDEF
@@ -2483,6 +2491,7 @@ CONTAINS
              if (associated(cospOUT%lsmallreff)) cospOUT%lsmallreff(:) = R_UNDEF
              if (associated(cospOUT%lbigreff)) cospOUT%lbigreff(:) = R_UNDEF
              if (associated(cospOUT%nmultilcld)) cospOUT%nmultilcld(:,:) = R_UNDEF
+             if (associated(cospOUT%nfracmulti)) cospOUT%nfracmulti(:) = R_UNDEF
              if (associated(cospOUT%nhetcld)) cospOUT%nhetcld(:,:) = R_UNDEF
              if (associated(cospOUT%coldct)) cospOUT%coldct(:) = R_UNDEF
              if (associated(cospOUT%coldct_cal)) cospOUT%coldct_cal(:) = R_UNDEF
@@ -2574,6 +2583,7 @@ CONTAINS
              if (associated(cospOUT%lsmallreff)) cospOUT%lsmallreff(:) = R_UNDEF
              if (associated(cospOUT%lbigreff)) cospOUT%lbigreff(:) = R_UNDEF
              if (associated(cospOUT%nmultilcld)) cospOUT%nmultilcld(:,:) = R_UNDEF
+             if (associated(cospOUT%nfracmulti)) cospOUT%nfracmulti(:) = R_UNDEF
              if (associated(cospOUT%nhetcld)) cospOUT%nhetcld(:,:) = R_UNDEF
              if (associated(cospOUT%coldct)) cospOUT%coldct(:) = R_UNDEF
              if (associated(cospOUT%coldct_cal)) cospOUT%coldct_cal(:) = R_UNDEF
@@ -2781,6 +2791,7 @@ CONTAINS
           if (associated(cospOUT%lsmallreff)) cospOUT%lsmallreff(:) = R_UNDEF
           if (associated(cospOUT%lbigreff)) cospOUT%lbigreff(:) = R_UNDEF
           if (associated(cospOUT%nmultilcld)) cospOUT%nmultilcld(:,:) = R_UNDEF
+          if (associated(cospOUT%nfracmulti)) cospOUT%nfracmulti(:) = R_UNDEF
           if (associated(cospOUT%nhetcld)) cospOUT%nhetcld(:,:) = R_UNDEF
           if (associated(cospOUT%coldct)) cospOUT%coldct(:) = R_UNDEF
           if (associated(cospOUT%coldct_cal)) cospOUT%coldct_cal(:) = R_UNDEF
@@ -2846,6 +2857,7 @@ CONTAINS
           if (associated(cospOUT%lsmallreff)) cospOUT%lsmallreff(:) = R_UNDEF
           if (associated(cospOUT%lbigreff)) cospOUT%lbigreff(:) = R_UNDEF
           if (associated(cospOUT%nmultilcld)) cospOUT%nmultilcld(:,:) = R_UNDEF
+          if (associated(cospOUT%nfracmulti)) cospOUT%nfracmulti(:) = R_UNDEF
           if (associated(cospOUT%nhetcld)) cospOUT%nhetcld(:,:) = R_UNDEF
           if (associated(cospOUT%coldct)) cospOUT%coldct(:) = R_UNDEF
           if (associated(cospOUT%coldct_cal)) cospOUT%coldct_cal(:) = R_UNDEF
@@ -3028,6 +3040,7 @@ CONTAINS
           if (associated(cospOUT%lsmallreff)) cospOUT%lsmallreff(:) = R_UNDEF
           if (associated(cospOUT%lbigreff)) cospOUT%lbigreff(:) = R_UNDEF
           if (associated(cospOUT%nmultilcld)) cospOUT%nmultilcld(:,:) = R_UNDEF
+          if (associated(cospOUT%nfracmulti)) cospOUT%nfracmulti(:) = R_UNDEF
           if (associated(cospOUT%nhetcld)) cospOUT%nhetcld(:,:) = R_UNDEF
           if (associated(cospOUT%coldct)) cospOUT%coldct(:) = R_UNDEF
           if (associated(cospOUT%coldct_cal)) cospOUT%coldct_cal(:) = R_UNDEF
@@ -3082,6 +3095,7 @@ CONTAINS
           if (associated(cospOUT%lsmallreff)) cospOUT%lsmallreff(:) = R_UNDEF
           if (associated(cospOUT%lbigreff)) cospOUT%lbigreff(:) = R_UNDEF
           if (associated(cospOUT%nmultilcld)) cospOUT%nmultilcld(:,:) = R_UNDEF
+          if (associated(cospOUT%nfracmulti)) cospOUT%nfracmulti(:) = R_UNDEF
           if (associated(cospOUT%nhetcld)) cospOUT%nhetcld(:,:) = R_UNDEF
           if (associated(cospOUT%coldct)) cospOUT%coldct(:) = R_UNDEF
           if (associated(cospOUT%coldct_cal)) cospOUT%coldct_cal(:) = R_UNDEF
@@ -3695,6 +3709,7 @@ CONTAINS
           if (associated(cospOUT%lsmallreff)) cospOUT%lsmallreff(:) = R_UNDEF
           if (associated(cospOUT%lbigreff)) cospOUT%lbigreff(:) = R_UNDEF
           if (associated(cospOUT%nmultilcld)) cospOUT%nmultilcld(:,:) = R_UNDEF
+          if (associated(cospOUT%nfracmulti)) cospOUT%nfracmulti(:) = R_UNDEF
           if (associated(cospOUT%nhetcld)) cospOUT%nhetcld(:,:) = R_UNDEF
           if (associated(cospOUT%coldct)) cospOUT%coldct(:) = R_UNDEF
           if (associated(cospOUT%coldct_cal)) cospOUT%coldct_cal(:) = R_UNDEF
@@ -3725,6 +3740,7 @@ CONTAINS
           if (associated(cospOUT%lsmallreff)) cospOUT%lsmallreff(:) = R_UNDEF
           if (associated(cospOUT%lbigreff)) cospOUT%lbigreff(:) = R_UNDEF
           if (associated(cospOUT%nmultilcld)) cospOUT%nmultilcld(:,:) = R_UNDEF
+          if (associated(cospOUT%nfracmulti)) cospOUT%nfracmulti(:) = R_UNDEF
           if (associated(cospOUT%nhetcld)) cospOUT%nhetcld(:,:) = R_UNDEF
           if (associated(cospOUT%coldct)) cospOUT%coldct(:) = R_UNDEF
           if (associated(cospOUT%coldct_cal)) cospOUT%coldct_cal(:) = R_UNDEF
@@ -3755,6 +3771,7 @@ CONTAINS
           if (associated(cospOUT%lsmallreff)) cospOUT%lsmallreff(:) = R_UNDEF
           if (associated(cospOUT%lbigreff)) cospOUT%lbigreff(:) = R_UNDEF
           if (associated(cospOUT%nmultilcld)) cospOUT%nmultilcld(:,:) = R_UNDEF
+          if (associated(cospOUT%nfracmulti)) cospOUT%nfracmulti(:) = R_UNDEF
           if (associated(cospOUT%nhetcld)) cospOUT%nhetcld(:,:) = R_UNDEF
           if (associated(cospOUT%coldct)) cospOUT%coldct(:) = R_UNDEF
           if (associated(cospOUT%coldct_cal)) cospOUT%coldct_cal(:) = R_UNDEF

@@ -1179,6 +1179,7 @@ slwc_ncot_int = SLWC_NCOT
         call addfld('lsmallreff', horiz_only, 'A', '1', '# of Liquid Clouds with Reff below lower threshold', flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld('lbigreff', horiz_only, 'A', '1', '# of Liquid Clouds with Reff above upper threshold', flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld('nmultilcld', horiz_only, 'A', '1', '# of Subcolumns with Multilayer Clouds excluded from SLWC analysis - MODIS/CloudSat', flag_xyfill=.true., fill_value=R_UNDEF)
+        call addfld('nfracmulti', horiz_only, 'A', '1', '# of Subcolumns with Multilayer Clouds-fracout ', flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld('nmultilcld_cal', horiz_only, 'A', '1', '# of Subcolumns with Multilayer Clouds excluded from SLWC analysis - CALIPSO/CloudSat', flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld('nhetcld', horiz_only, 'A', '1', '# of Subcolumns with Heterogeneous Clouds excluded from SLWC analysis -MODIS/CloudSat', flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld('nhetcld_cal', horiz_only, 'A', '1', '# of Subcolumns with Heterogeneous Clouds excluded from SLWC analysis - CALIPSO/CloudSat', flag_xyfill=.true., fill_value=R_UNDEF)
@@ -1200,6 +1201,7 @@ slwc_ncot_int = SLWC_NCOT
         call add_default('lbigreff',cosp_histfile_num,' ')
         call add_default('nmultilcld',cosp_histfile_num, ' ')
         call add_default('nmultilcld_cal',cosp_histfile_num, ' ')
+        call add_default('nfracmulti',cosp_histfile_num, ' ')
         call add_default('nhetcld',cosp_histfile_num,' ')
         call add_default('nhetcld_cal',cosp_histfile_num,' ')
         call add_default('coldct',cosp_histfile_num, ' ')
@@ -1747,6 +1749,7 @@ slwc_ncot_int = SLWC_NCOT
     real(r8) :: lsmallreff(pcols)
     real(r8) :: lbigreff(pcols)
     real(r8) :: nmultilcld(pcols)
+    real(r8) :: nfracmulti(pcols)
     real(r8) :: nhetcld(pcols)
     real(r8) :: nmultilcld_cal(pcols)
     real(r8) :: nhetcld_cal(pcols)
@@ -1870,6 +1873,7 @@ slwc_ncot_int = SLWC_NCOT
     lsmallreff(1:pcols)                              = R_UNDEF
     lbigreff(1:pcols)                                = R_UNDEF
     nmultilcld(1:pcols)                              = R_UNDEF
+    nfracmulti(1:pcols)                              = R_UNDEF
     nhetcld(1:pcols)                                 = R_UNDEF
     nmultilcld_cal(1:pcols)                          = R_UNDEF
     nhetcld_cal(1:pcols)                             = R_UNDEF
@@ -2676,6 +2680,7 @@ slwc_ncot_int = SLWC_NCOT
         nmultilcld(1:ncol) = cospOUT%nmultilcld(:,1)
         nhetcld(1:ncol) = cospOUT%nhetcld(:,1)
         nmultilcld_cal(1:ncol) = cospOUT%nmultilcld(:,2)
+        nfracmulti(1:ncol) = cospOUT%nfracmulti(:)
         nhetcld_cal(1:ncol) = cospOUT%nhetcld(:,2)
         coldct(1:ncol) = cospOUT%coldct(:)
         coldct_cal(1:ncol) = cospOUT%coldct_cal(:)
@@ -3004,6 +3009,7 @@ slwc_ncot_int = SLWC_NCOT
          call outfld('lbigreff', lbigreff, pcols, lchnk)
          call outfld('nmultilcld', nmultilcld, pcols, lchnk)
          call outfld('nmultilcld_cal', nmultilcld_cal, pcols, lchnk)
+         call outfld('nfracmulti', nfracmulti, pcols, lchnk)
          call outfld('nhetcld_cal', nhetcld_cal, pcols, lchnk)
          call outfld('nhetcld', nhetcld, pcols, lchnk)
          call outfld('coldct', coldct, pcols, lchnk)
@@ -3846,6 +3852,7 @@ allocate(x%mice(Npoints))
 allocate(x%lsmallreff(Npoints))
 allocate(x%lbigreff(Npoints))
 allocate(x%nmultilcld(Npoints,2))
+allocate(x%nfracmulti(Npoints))
 allocate(x%nhetcld(Npoints,2))
 allocate(x%coldct(Npoints))
 allocate(x%coldct_cal(Npoints))
@@ -4190,6 +4197,10 @@ allocate(x%slwccot(Npoints,SLWC_NCOT,CFODD_NCLASS))
      if (associated(y%nmultilcld)) then
         deallocate(y%nmultilcld)
         nullify(y%nmultilcld)
+     endif
+     if (associated(y%nfracmulti)) then
+        deallocate(y%nfracmulti)
+        nullify(y%nfracmulti)
      endif
      if (associated(y%nhetcld)) then
         deallocate(y%nhetcld)
