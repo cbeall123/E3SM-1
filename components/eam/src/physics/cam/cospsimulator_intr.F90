@@ -1171,6 +1171,9 @@ slwc_ncot_int = SLWC_NCOT
         call addfld ('npdfcld_cold', horiz_only, 'A', '1', '# of Non-Precipitating Clouds cold ct', flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld ('npdfdrz_cold', horiz_only, 'A', '1', '# of Drizzling Clouds cold ct"', flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld ('npdfrain_cold', horiz_only, 'A', '1', '# of Raining Clouds cold ct"', flag_xyfill=.true., fill_value=R_UNDEF)
+        call addfld ('npdfcld_multi', horiz_only, 'A', '1', '# of Non-Precipitating Clouds multil - fracout', flag_xyfill=.true., fill_value=R_UNDEF)
+        call addfld ('npdfdrz_multi', horiz_only, 'A', '1', '# of Drizzling Clouds multil - fracout"', flag_xyfill=.true., fill_value=R_UNDEF)
+        call addfld ('npdfrain_multi', horiz_only, 'A', '1', '# of Raining Clouds multil - fracout"', flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld ('npdfcld_cal', horiz_only, 'A', '1', '# of Non-Precipitating Clouds CALIPSO only"', flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld ('npdfdrz_cal', horiz_only, 'A', '1', '# of Drizzling Clouds CALIPSO only"', flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld ('npdfrain_cal', horiz_only, 'A', '1', '# of Precipitating Clouds CALIPSO only"', flag_xyfill=.true., fill_value=R_UNDEF)
@@ -1198,6 +1201,9 @@ slwc_ncot_int = SLWC_NCOT
         call add_default('npdfcld_cold',cosp_histfile_num,' ')
         call add_default('npdfdrz_cold',cosp_histfile_num,' ')
         call add_default('npdfrain_cold',cosp_histfile_num,' ')
+        call add_default('npdfcld_multi',cosp_histfile_num,' ')
+        call add_default('npdfdrz_multi',cosp_histfile_num,' ')
+        call add_default('npdfrain_multi',cosp_histfile_num,' ')
         call add_default('npdfcld_cal',cosp_histfile_num,' ')
         call add_default('npdfdrz_cal',cosp_histfile_num,' ')
         call add_default('npdfrain_cal',cosp_histfile_num,' ')
@@ -1750,6 +1756,9 @@ slwc_ncot_int = SLWC_NCOT
     real(r8) :: npdfcld_cold(pcols)
     real(r8) :: npdfdrz_cold(pcols)
     real(r8) :: npdfrain_cold(pcols)
+    real(r8) :: npdfcld_multi(pcols)
+    real(r8) :: npdfdrz_multi(pcols)
+    real(r8) :: npdfrain_multi(pcols)
     real(r8) :: npdfcld_cal(pcols)
     real(r8) :: npdfdrz_cal(pcols)
     real(r8) :: npdfrain_cal(pcols)
@@ -1877,6 +1886,9 @@ slwc_ncot_int = SLWC_NCOT
     npdfcld_cold(1:pcols)                            = R_UNDEF
     npdfdrz_cold(1:pcols)                            = R_UNDEF
     npdfrain_cold(1:pcols)                           = R_UNDEF
+    npdfcld_multi(1:pcols)                           = R_UNDEF
+    npdfdrz_multi(1:pcols)                           = R_UNDEF
+    npdfrain_multi(1:pcols)                          = R_UNDEF
     npdfcld_cal(1:pcols)                             = R_UNDEF
     npdfdrz_cal(1:pcols)                             = R_UNDEF
     npdfrain_cal(1:pcols)                            = R_UNDEF
@@ -2685,9 +2697,12 @@ slwc_ncot_int = SLWC_NCOT
         npdfcld_cold(1:ncol) = cospOUT%wr_occfreq_ntotal(:,4)
         npdfdrz_cold(1:ncol) = cospOUT%wr_occfreq_ntotal(:,5)
         npdfrain_cold(1:ncol) = cospOUT%wr_occfreq_ntotal(:,6)
-        npdfcld_cal(1:ncol) = cospOUT%wr_occfreq_ntotal(:,7)
-        npdfdrz_cal(1:ncol) = cospOUT%wr_occfreq_ntotal(:,8)
-        npdfrain_cal(1:ncol) = cospOUT%wr_occfreq_ntotal(:,9)
+        npdfcld_multi(1:ncol) = cospOUT%wr_occfreq_ntotal(:,7)
+        npdfdrz_multi(1:ncol) = cospOUT%wr_occfreq_ntotal(:,8)
+        npdfrain_multi(1:ncol) = cospOUT%wr_occfreq_ntotal(:,9)
+        npdfcld_cal(1:ncol) = cospOUT%wr_occfreq_ntotal(:,10)
+        npdfdrz_cal(1:ncol) = cospOUT%wr_occfreq_ntotal(:,11)
+        npdfrain_cal(1:ncol) = cospOUT%wr_occfreq_ntotal(:,12)
         lsmallcot(1:ncol) = cospOUT%lsmallcot(:)
         mice(1:ncol) = cospOUT%mice(:)
         lsmallreff(1:ncol) = cospOUT%lsmallreff(:)
@@ -3018,6 +3033,9 @@ slwc_ncot_int = SLWC_NCOT
          call outfld('npdfcld_cold', npdfcld_cold, pcols, lchnk)
          call outfld('npdfdrz_cold', npdfdrz_cold, pcols, lchnk)
          call outfld('npdfrain_cold', npdfrain_cold, pcols, lchnk)
+         call outfld('npdfcld_multi', npdfcld_multi, pcols, lchnk)
+         call outfld('npdfdrz_multi', npdfdrz_multi, pcols, lchnk)
+         call outfld('npdfrain_multi', npdfrain_multi, pcols, lchnk)
          call outfld('npdfcld_cal', npdfcld_cal, pcols, lchnk)
          call outfld('npdfdrz_cal', npdfdrz_cal, pcols, lchnk)
          call outfld('npdfrain_cal', npdfrain_cal, pcols, lchnk)
