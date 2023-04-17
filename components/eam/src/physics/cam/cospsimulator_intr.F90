@@ -798,6 +798,9 @@ slwc_ncot_int = SLWC_NCOT
        call addfld ('ATB532_CAL',(/'cosp_scol','lev      '/),'I','no_unit_log10(x)',                           &
             'Calipso Attenuated Total Backscatter (532 nm) in each Subcolumn',                        &
             flag_xyfill=.true., fill_value=R_UNDEF)
+       ! lclcalipsoflag (time,scol,alt40,loc)
+       call addfld ('CLD_CAL_FLAG', (/'cosp_scol','cosp_ht'/), 'I','1', 'Calipso Subcolumn Cloud Flag',     &
+            flag_xyfill=.true., fill_value=R_UNDEF)
        ! lclcalipsoliq (time,alt40,loc) !!+cosp1.4
        call addfld('CLD_CAL_LIQ', (/'cosp_ht'/), 'A','percent', 'Calipso Liquid Cloud Fraction',                 &
             flag_xyfill=.true., fill_value=R_UNDEF)
@@ -901,6 +904,7 @@ slwc_ncot_int = SLWC_NCOT
        call add_default ('RFL_PARASOL',cosp_histfile_num,' ')
        call add_default ('CFAD_SR532_CAL',cosp_histfile_num,' ')
        call add_default ('CLD_CAL_LIQ',cosp_histfile_num,' ')  !+COSP1.4
+       call add_default ('CLD_CAL_FLAG',cosp_histfile_num,' ')
        call add_default ('CLD_CAL_ICE',cosp_histfile_num,' ')
        call add_default ('CLD_CAL_UN',cosp_histfile_num,' ')
        call add_default ('CLDTOT_CAL_ICE',cosp_histfile_num,' ')
@@ -1578,7 +1582,7 @@ slwc_ncot_int = SLWC_NCOT
     ! Simulator output info
     ! ######################################################################################
     integer, parameter :: nf_radar=17                    ! number of radar outputs
-    integer, parameter :: nf_calipso=28                  ! number of calipso outputs
+    integer, parameter :: nf_calipso=29                  ! number of calipso outputs
     integer, parameter :: nf_isccp=9                     ! number of isccp outputs
     integer, parameter :: nf_misr=1                      ! number of misr outputs
     integer, parameter :: nf_modis=22                    ! number of modis outputs
@@ -1601,7 +1605,7 @@ slwc_ncot_int = SLWC_NCOT
                          'CLD_CAL_ICE    ','CLD_CAL_UN     ','CLD_CAL_TMP    ','CLD_CAL_TMPLIQ ','CLD_CAL_TMPICE ',&
                          'CLD_CAL_TMPUN  ','CLDTOT_CAL_ICE ','CLDTOT_CAL_LIQ ','CLDTOT_CAL_UN  ','CLDHGH_CAL_ICE ',&
                          'CLDHGH_CAL_LIQ ','CLDHGH_CAL_UN  ','CLDMED_CAL_ICE ','CLDMED_CAL_LIQ ','CLDMED_CAL_UN  ',&
-                         'CLDLOW_CAL_ICE ','CLDLOW_CAL_LIQ ','CLDLOW_CAL_UN  '/)!,                                    &
+                         'CLDLOW_CAL_ICE ','CLDLOW_CAL_LIQ ','CLDLOW_CAL_UN  ','CLD_CAL_FLAG'/)!,                                    &
 !                         'CLDOPQ_CAL     ','CLDTHN_CAL     ','CLDZOPQ_CAL    ','CLDOPQ_CAL_2D  ','CLDTHN_CAL_2D  ',&
 !                         'CLDZOPQ_CAL_2D ','OPACITY_CAL_2D ','CLDOPQ_CAL_TMP ','CLDTHN_CAL_TMP ','CLDZOPQ_CAL_TMP',&
 !                         'CLDOPQ_CAL_Z   ','CLDTHN_CAL_Z   ','CLDTHN_CAL_EMIS','CLDOPQ_CAL_SE  ','CLDTHN_CAL_SE  ',&
@@ -1708,6 +1712,8 @@ slwc_ncot_int = SLWC_NCOT
     real(r8) :: cldlow_cal_un(pcols)                     ! CAM (time,profile) !+cosp1.4
     real(r8) :: cld_cal(pcols,nht_cosp)                  ! CAM clcalipso (time,height,profile)
     real(r8) :: cld_cal_liq(pcols,nht_cosp)              ! CAM (time,height,profile) !+cosp1.4
+    real(r8) :: cld_cal_flag(pcols,nscol_cosp,nht_cosp)  ! CAM (time,height,column,profile)
+    real(r8) :: cld_cal_flag_cs(pcols,nscol_cosp*nht_cosp) !
     real(r8) :: cld_cal_ice(pcols,nht_cosp)              ! CAM (time,height,profile)
     real(r8) :: cld_cal_un(pcols,nht_cosp)               ! CAM (time,height,profile)
     real(r8) :: cld_cal_tmp(pcols,nht_cosp)              ! CAM (time,height,profile)
@@ -1938,6 +1944,8 @@ slwc_ncot_int = SLWC_NCOT
     cld_cal_tmpliq(1:pcols,1:nht_cosp)               = R_UNDEF
     cld_cal_tmpice(1:pcols,1:nht_cosp)               = R_UNDEF
     cld_cal_tmpun(1:pcols,1:nht_cosp)                = R_UNDEF
+    cld_cal_flag(1:pcols,1:nscol_cosp,1:nht_cosp)    = R_UNDEF
+    cld_cal_flag_cs(1:pcols,1:nht_cosp*nscol_cosp)   = R_UNDEF
 !    cldopaq_cal(1:pcols)                             = R_UNDEF          
 !    cldthin_cal(1:pcols)                             = R_UNDEF
 !    cldopaqz_cal(1:pcols)                            = R_UNDEF
@@ -2016,6 +2024,7 @@ slwc_ncot_int = SLWC_NCOT
     cldtot_cs2(1:pcols)                              = R_UNDEF
     cld_cal_notcs(1:pcols,1:nht_cosp)                = R_UNDEF
     atb532_cal(1:pcols,1:nhtml_cosp*nscol_cosp)      = R_UNDEF
+    !cld_cal_flag_cs(1:pcols,1:nht_cosp*nscol_cosp)   = R_UNDEF
     mol532_cal(1:pcols,1:nhtml_cosp)                 = R_UNDEF
     cld_misr(1:pcols,1:nhtmisr_cosp*ntau_cosp)       = R_UNDEF
     refl_parasol(1:pcols,1:nsza_cosp)                = R_UNDEF
@@ -2702,7 +2711,8 @@ slwc_ncot_int = SLWC_NCOT
        cld_cal_tmpliq(1:ncol,1:nht_cosp) = cospOUT%calipso_lidarcldtmp(:,:,2)	                   ! CAM version of clcalipsotmpice
        cld_cal_tmpice(1:ncol,1:nht_cosp) = cospOUT%calipso_lidarcldtmp(:,:,3)	                   ! CAM version of clcalipsotmpliq
        cld_cal_tmpun(1:ncol,1:nht_cosp)  = cospOUT%calipso_lidarcldtmp(:,:,4)	                   ! CAM version of clcalipsotmpun, !+cosp1.4
-       cld_cal(1:ncol,1:nht_cosp)                    = cospOUT%calipso_lidarcld(:,1:nht_cosp)  ! CAM version of clcalipso (time,height,profile)
+       cld_cal(1:ncol,1:nht_cosp)                    = cospOUT%calipso_lidarcld(:,1:nht_cosp)  ! CAM version of clcalipso (time,height,profile
+       cld_cal_flag(1:ncol,1:nscol_cosp,1:nht_cosp) = cospOUT%calipso_lidarcldflag(:,:,:)            ! CALIPSO cloud flag (time, cosp_scol, CloudSat grid height,profile)
        mol532_cal(1:ncol,1:nhtml_cosp)               = cospOUT%calipso_beta_mol                   ! CAM version of beta_mol532 (time,height_mlev,profile)
        atb532(1:ncol,1:nscol_cosp,1:nhtml_cosp)      = cospOUT%calipso_beta_tot                   ! atb532 (time,height_mlev,column,profile)
        cfad_lidarsr532(1:ncol,1:nsr_cosp,1:nht_cosp) = cospOUT%calipso_cfad_sr(:,:,:) ! cfad_lidarsr532 (time,height,scat_ratio,profile)     
@@ -2873,6 +2883,12 @@ slwc_ncot_int = SLWC_NCOT
                 cfad_sr532_cal(i,ihs) = cfad_lidarsr532(i,is,ih)     ! cfad_sr532_cal(pcols,nht_cosp*nsr_cosp)
              end do
           end do
+          do ih=1,nht_cosp
+             do is=1,nscol_cosp
+                ihs=(ih-1)*nscol_cosp+is                       
+                cld_cal_flag_cs(i,ihs) = cld_cal_flag(i,is,ih)     ! cld_cal_flag(pcols,nht_cosp*nscol_cosp)
+             end do
+          end do
           ! CAM atb532 (time,height_mlev,column,profile)  FIX
           do ihml=1,nhtml_cosp
              do isc=1,nscol_cosp
@@ -3013,6 +3029,7 @@ slwc_ncot_int = SLWC_NCOT
           cld_cal_liq(:ncol,:nht_cosp) = 0.0_r8
        end where
        call outfld('CLD_CAL_LIQ',cld_cal_liq    ,pcols,lchnk)  !!
+
        
        where (cld_cal_ice(:ncol,:nht_cosp) .eq. R_UNDEF)
           !! setting missing values to 0 (clear air), likely below sea level
@@ -3353,6 +3370,7 @@ slwc_ncot_int = SLWC_NCOT
        end if
        if (llidar_sim) then
           call outfld('ATB532_CAL',atb532_cal,pcols,lchnk) !! fails check_accum if 'A'
+          call outfld('CLD_CAL_FLAG',cld_cal_flag_cs, pcols,lchnk)
        end if
        if (lradar_sim) then
           call outfld('DBZE_CS',dbze_cs,pcols,lchnk) !! fails check_accum if 'A'
@@ -3990,6 +4008,7 @@ slwc_ncot_int = SLWC_NCOT
        allocate(x%calipso_lidarcld(Npoints,Nlvgrid))
        allocate(x%calipso_cldlayer(Npoints,LIDAR_NCAT))        
        allocate(x%calipso_lidarcldphase(Npoints,Nlvgrid,6))
+       allocate(x%calipso_lidarcldflag(Npoints,Ncolumns,Nlvgrid))
        allocate(x%calipso_lidarcldtmp(Npoints,LIDAR_NTEMP,5))
        allocate(x%calipso_cldlayerphase(Npoints,LIDAR_NCAT,6))     
        ! These 2 outputs are part of the calipso output type, but are not controlled by an 
@@ -4130,6 +4149,10 @@ allocate(x%slwccot(Npoints,SLWC_NCOT,CFODD_NCLASS))
      if (associated(y%calipso_lidarcldphase))     then
         deallocate(y%calipso_lidarcldphase)
         nullify(y%calipso_lidarcldphase)     
+     endif
+     if (associated(y%calipso_lidarcldflag))     then
+        deallocate(y%calipso_lidarcldflag)
+        nullify(y%calipso_lidarcldflag)     
      endif
      if (associated(y%calipso_cldlayerphase))     then
         deallocate(y%calipso_cldlayerphase)

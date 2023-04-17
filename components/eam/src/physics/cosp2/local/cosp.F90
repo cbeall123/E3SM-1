@@ -199,6 +199,8 @@ MODULE MOD_COSP
      real(wp), dimension(:),pointer :: &
           calipso_cldthinemis => null(),   & ! thin cloud emissivity 
           calipso_srbval => null()           ! SR bins in cfad_sr
+     real(wp), dimension(:,:,:),pointer :: &
+          calipso_lidarcldflag => null()     ! 3D "lidar" cloud flag
 
      ! GROUND LIDAR outputs
      real(wp),dimension(:,:,:),pointer :: &  
@@ -398,7 +400,9 @@ CONTAINS
          grLidar532_beta_tot,atlid_beta_tot,cloudsatZe_non
     real(wp),dimension(:),allocatable,target :: &
          out1D_1,out1D_2,out1D_3,out1D_4,out1D_5,out1D_6,out1D_7,out1D_8,       &
-         out1D_9,out1D_10,out1D_11,out1D_12 
+         out1D_9,out1D_10,out1D_11,out1D_12
+    real(wp),dimension(:),allocatable,target :: &
+         out1D_13
     real(wp),dimension(:,:,:),allocatable :: &
        betamol_in,betamoli,pnormi,ze_toti,ze_noni
     real(wp),dimension(:,:,:),allocatable :: &
@@ -1115,6 +1119,10 @@ CONTAINS
           allocate(out1D_11(Npoints)) 
           cospOUT%calipso_cldthinemis(ij:ik) => out1D_11 
        endif
+       if (.not. associated(cospOUT%calipso_lidarcldflag)) then
+          allocate(out1D_13(Npoints*Nlvgrid*calipsoIN%Ncolumns)) 
+          cospOUT%calipso_lidarcldflag(ij:ik,1:calipsoIN%Ncolumns,1:Nlvgrid) => out1D_13 
+       endif
        
        ! Call simulator
        ok_lidar_cfad=.true.
@@ -1125,7 +1133,8 @@ CONTAINS
             cospOUT%calipso_cfad_sr(ij:ik,:,:), cospOUT%calipso_lidarcld(ij:ik,:),       &
             cospOUT%calipso_cldlayer(ij:ik,:),                                           &
             cospgridIN%at(:,:), calipso_betaperp_tot(:,:,:), cospgridIN%surfelev,        & 
-            cospOUT%calipso_lidarcldphase(ij:ik,:,:),                       &
+            cospOUT%calipso_lidarcldphase(ij:ik,:,:),                                    &
+            cospOUT%calipso_lidarcldflag(ij:ik,:,:),                                     &
             cospOUT%calipso_lidarcldtype(ij:ik,:,:),  cospOUT%calipso_cldtype(ij:ik,:),  &
             cospOUT%calipso_cldtypetemp(ij:ik,:), cospOUT%calipso_cldtypemeanz(ij:ik,:), & 
             cospOUT%calipso_cldtypemeanzse(ij:ik,:), cospOUT%calipso_cldthinemis(ij:ik), &
@@ -1182,7 +1191,10 @@ CONTAINS
           deallocate(out1D_11) 
           nullify(cospOUT%calipso_cldthinemis)
        endif
-
+       if (allocated(out1D_13)) then 
+          deallocate(out1D_13) 
+          nullify(cospOUT%calipso_lidarcldflag)
+       endif
     endif
 
     ! GROUND LIDAR Simulator
