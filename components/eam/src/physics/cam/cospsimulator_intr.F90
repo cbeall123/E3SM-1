@@ -31,7 +31,7 @@ module cospsimulator_intr
        reffICE_binCenters, reffLIQ_binEdges, reffLIQ_binCenters, LIDAR_NTYPE,          &
        nCloudsatPrecipClass, CFODD_NDBZE, CFODD_NICOD, CFODD_HISTDBZEedges,            &
        CFODD_HISTDBZEcenters, CFODD_HISTICODedges, CFODD_HISTICODcenters,              &
-       CFODD_NCLASS, WR_NREGIME, NOBSTYPE, SLWC_NCOT, SLWC_HISTCOT,                    &
+       CFODD_NCLASS, WR_NREGIME, NOBSTYPE, SLWC_NCOT, SLWC_HISTCOT, COT_NCLASS,        &
        SLWC_HISTCOTedges, SLWC_HISTCOTcenters,   &
        nsza_cosp         => PARASOL_NREFL,       &
        nprs_cosp         => npres,               &
@@ -1140,18 +1140,15 @@ slwc_ncot_int = SLWC_NCOT
        call addfld ('CFODD_NTOTAL9_CS',(/'cosp_cfodd_dbze','cosp_cfodd_icod' /),&
               'A','1','# of CFODD MODIS, large reff, multil', flag_xyfill=.true.,&
               fill_value=R_UNDEF)
-       call addfld ('CFODD_NTOTAL10_CS',(/'cosp_cfodd_dbze','cosp_cfodd_icod' /),&
-              'A','1','# of CFODD detected by CALIPSO ', flag_xyfill=.true.,     &
-              fill_value=R_UNDEF)
             
         call addfld ('SLWC_COT1',(/'cosp_slwc_cot' /),&
-             'A','1','# of SLWCs (05 < Reff < 12 micron) binned by MODIS cloud optical thickness',&
+             'A','1','# of SLWCs (05 <= Reff < 12 micron) binned by MODIS cloud optical thickness',&
              flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld ('SLWC_COT2',(/'cosp_slwc_cot' /), 'A','1',&
-             '# of SLWCs (12 < Reff < 18 micron) binned by MODIS cloud optical thickness',&
+             '# of SLWCs (12 < Reff <= 18 micron) binned by MODIS cloud optical thickness',&
              flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld ('SLWC_COT3',(/'cosp_slwc_cot' /), 'A','1',&
-             '# of SLWCs (18 < Reff < 35 micron) binned by MODIS cloud optical thickness',&
+             '# of SLWCs (18 <= Reff < 35 micron) binned by MODIS cloud optical thickness',&
              flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld ('SLWC_COT4',(/'cosp_slwc_cot' /), 'A','1',&
              '# of SLWCs small Reff, cold cloud top, binned by MODIS cloud optical thickness',&
@@ -1172,8 +1169,14 @@ slwc_ncot_int = SLWC_NCOT
              '# of SLWCs large Reff, cold ct, multil, binned by MODIS cloud optical thickness',&
               flag_xyfill=.true., fill_value=R_UNDEF)
        call addfld ('SLWC_COT10',(/'cosp_slwc_cot' /), 'A','1',&
-              '# of SLWCs binned by CALIPSO cloud optical thickness', flag_xyfill=.true.,&
-              fill_value=R_UNDEF)
+              '# of SLWCs (05 <= Reff < 12 micron) detected by CALIPSO/MODIS binned by MODIS cloud optical thickness',&
+              flag_xyfill=.true.,fill_value=R_UNDEF)
+       call addfld ('SLWC_COT11',(/'cosp_slwc_cot' /), 'A','1',&
+              '# of SLWCs (12 <= Reff < 18 micron) detected by CALIPSO/MODIS binned by MODIS cloud optical thickness',&
+              flag_xyfill=.true.,fill_value=R_UNDEF)
+       call addfld ('SLWC_COT12',(/'cosp_slwc_cot' /), 'A','1',&
+              '# of SLWCs (18 <= Reff < 30 micron) detected by CALIPSO/MODIS binned by MODIS cloud optical thickness',&
+              flag_xyfill=.true.,fill_value=R_UNDEF)
 
         ! axes for CFODD - I think you don't need this because its a history coordinate
         ! float CFODD_NDBZE (cfodd_ndbze) cloudsat_equivalent_reflectivity_factor
@@ -1198,7 +1201,6 @@ slwc_ncot_int = SLWC_NCOT
         call add_default ('CFODD_NTOTAL7_CS',cosp_histfile_num, ' ')
         call add_default ('CFODD_NTOTAL8_CS',cosp_histfile_num, ' ')
         call add_default ('CFODD_NTOTAL9_CS',cosp_histfile_num, ' ')
-        call add_default ('CFODD_NTOTAL10_CS',cosp_histfile_num, ' ')
         call add_default ('SLWC_COT1',cosp_histfile_num,' ')
         call add_default ('SLWC_COT2',cosp_histfile_num,' ')
         call add_default ('SLWC_COT3',cosp_histfile_num,' ')
@@ -1209,6 +1211,8 @@ slwc_ncot_int = SLWC_NCOT
         call add_default ('SLWC_COT8',cosp_histfile_num,' ')
         call add_default ('SLWC_COT9',cosp_histfile_num,' ')
         call add_default ('SLWC_COT10',cosp_histfile_num,' ')
+        call add_default ('SLWC_COT11',cosp_histfile_num,' ')
+        call add_default ('SLWC_COT12',cosp_histfile_num,' ')
         !call add_default ('CFODD_NDBZE',cosp_histfile_num, ' ')
         !call add_default ('CFODD_NICOD',cosp_histfile_num, ' ')
         
@@ -1227,9 +1231,7 @@ slwc_ncot_int = SLWC_NCOT
         call addfld ('npdfcld_multi', horiz_only, 'A', '1', '# of Non-Precipitating Clouds multil - fracout', flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld ('npdfdrz_multi', horiz_only, 'A', '1', '# of Drizzling Clouds multil - fracout"', flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld ('npdfrain_multi', horiz_only, 'A', '1', '# of Raining Clouds multil - fracout"', flag_xyfill=.true., fill_value=R_UNDEF)
-        call addfld ('npdfcld_cal', horiz_only, 'A', '1', '# of Non-Precipitating Clouds CALIPSO only"', flag_xyfill=.true., fill_value=R_UNDEF)
-        call addfld ('npdfdrz_cal', horiz_only, 'A', '1', '# of Drizzling Clouds CALIPSO only"', flag_xyfill=.true., fill_value=R_UNDEF)
-        call addfld ('npdfrain_cal', horiz_only, 'A', '1', '# of Precipitating Clouds CALIPSO only"', flag_xyfill=.true., fill_value=R_UNDEF)
+        call addfld ('npdfslwc_cal', horiz_only, 'A', '1', '# of SLWCs MODIS/CALIPSO only"', flag_xyfill=.true., fill_value=R_UNDEF)
         
         !CB Adding counts of other cloud types not included in diagnostics
         ! int lsmallcot (loc), "number_of_slwc_lowCOT"
@@ -1257,9 +1259,7 @@ slwc_ncot_int = SLWC_NCOT
         call add_default('npdfcld_multi',cosp_histfile_num,' ')
         call add_default('npdfdrz_multi',cosp_histfile_num,' ')
         call add_default('npdfrain_multi',cosp_histfile_num,' ')
-        call add_default('npdfcld_cal',cosp_histfile_num,' ')
-        call add_default('npdfdrz_cal',cosp_histfile_num,' ')
-        call add_default('npdfrain_cal',cosp_histfile_num,' ')
+        call add_default('npdfslwc_cal',cosp_histfile_num,' ')
         call add_default('lsmallcot',cosp_histfile_num,' ')
         call add_default('mice',cosp_histfile_num,' ')
         call add_default('lsmallreff',cosp_histfile_num,' ')
@@ -1802,7 +1802,6 @@ slwc_ncot_int = SLWC_NCOT
     real(r8) :: cfodd_ntotal7(pcols,CFODD_NDBZE,CFODD_NICOD)
     real(r8) :: cfodd_ntotal8(pcols,CFODD_NDBZE,CFODD_NICOD)
     real(r8) :: cfodd_ntotal9(pcols,CFODD_NDBZE,CFODD_NICOD)
-    real(r8) :: cfodd_ntotal10(pcols,CFODD_NDBZE,CFODD_NICOD)
     real(r8) :: cfodd_ntotal1_cs(pcols,CFODD_NDBZE*CFODD_NICOD)
     real(r8) :: cfodd_ntotal2_cs(pcols,CFODD_NDBZE*CFODD_NICOD)
     real(r8) :: cfodd_ntotal3_cs(pcols,CFODD_NDBZE*CFODD_NICOD)
@@ -1812,7 +1811,6 @@ slwc_ncot_int = SLWC_NCOT
     real(r8) :: cfodd_ntotal7_cs(pcols,CFODD_NDBZE*CFODD_NICOD)
     real(r8) :: cfodd_ntotal8_cs(pcols,CFODD_NDBZE*CFODD_NICOD)
     real(r8) :: cfodd_ntotal9_cs(pcols,CFODD_NDBZE*CFODD_NICOD)
-    real(r8) :: cfodd_ntotal10_cs(pcols,CFODD_NDBZE*CFODD_NICOD)
     real(r8) :: slwc_cot1(pcols,SLWC_NCOT)
     real(r8) :: slwc_cot2(pcols,SLWC_NCOT)
     real(r8) :: slwc_cot3(pcols,SLWC_NCOT)
@@ -1823,6 +1821,8 @@ slwc_ncot_int = SLWC_NCOT
     real(r8) :: slwc_cot8(pcols,SLWC_NCOT)
     real(r8) :: slwc_cot9(pcols,SLWC_NCOT)
     real(r8) :: slwc_cot10(pcols,SLWC_NCOT)
+    real(r8) :: slwc_cot11(pcols,SLWC_NCOT)
+    real(r8) :: slwc_cot12(pcols,SLWC_NCOT)
     real(r8) :: npdfcld(pcols)
     real(r8) :: npdfdrz(pcols)
     real(r8) :: npdfrain(pcols)
@@ -1832,9 +1832,7 @@ slwc_ncot_int = SLWC_NCOT
     real(r8) :: npdfcld_multi(pcols)
     real(r8) :: npdfdrz_multi(pcols)
     real(r8) :: npdfrain_multi(pcols)
-    real(r8) :: npdfcld_cal(pcols)
-    real(r8) :: npdfdrz_cal(pcols)
-    real(r8) :: npdfrain_cal(pcols)
+    real(r8) :: npdfslwc_cal(pcols)
     real(r8) :: lsmallcot(pcols)
     real(r8) :: mice(pcols)
     real(r8) :: lsmallreff(pcols)
@@ -1902,7 +1900,6 @@ slwc_ncot_int = SLWC_NCOT
     cfodd_ntotal7(1:pcols,1:CFODD_NDBZE,1:CFODD_NICOD) = R_UNDEF
     cfodd_ntotal8(1:pcols,1:CFODD_NDBZE,1:CFODD_NICOD) = R_UNDEF
     cfodd_ntotal9(1:pcols,1:CFODD_NDBZE,1:CFODD_NICOD) = R_UNDEF
-    cfodd_ntotal10(1:pcols,1:CFODD_NDBZE,1:CFODD_NICOD) = R_UNDEF
     slwc_cot1(1:pcols,1:SLWC_NCOT)      = R_UNDEF
     slwc_cot2(1:pcols,1:SLWC_NCOT)      = R_UNDEF
     slwc_cot3(1:pcols,1:SLWC_NCOT)      = R_UNDEF
@@ -1913,7 +1910,8 @@ slwc_ncot_int = SLWC_NCOT
     slwc_cot8(1:pcols,1:SLWC_NCOT)      = R_UNDEF
     slwc_cot9(1:pcols,1:SLWC_NCOT)      = R_UNDEF
     slwc_cot10(1:pcols,1:SLWC_NCOT)     = R_UNDEF
-     
+    slwc_cot11(1:pcols,1:SLWC_NCOT)     = R_UNDEF
+    slwc_cot12(1:pcols,1:SLWC_NCOT)     = R_UNDEF
     
     
     ! (all CAM output variables. including collapsed variables)
@@ -1973,7 +1971,6 @@ slwc_ncot_int = SLWC_NCOT
     cfodd_ntotal7_cs(1:pcols,1:CFODD_NDBZE*CFODD_NICOD) = R_UNDEF
     cfodd_ntotal8_cs(1:pcols,1:CFODD_NDBZE*CFODD_NICOD) = R_UNDEF
     cfodd_ntotal9_cs(1:pcols,1:CFODD_NDBZE*CFODD_NICOD) = R_UNDEF
-    cfodd_ntotal10_cs(1:pcols,1:CFODD_NDBZE*CFODD_NICOD) = R_UNDEF
     npdfcld(1:pcols)                                 = R_UNDEF
     npdfdrz(1:pcols)                                 = R_UNDEF
     npdfrain(1:pcols)                                = R_UNDEF
@@ -1983,9 +1980,7 @@ slwc_ncot_int = SLWC_NCOT
     npdfcld_multi(1:pcols)                           = R_UNDEF
     npdfdrz_multi(1:pcols)                           = R_UNDEF
     npdfrain_multi(1:pcols)                          = R_UNDEF
-    npdfcld_cal(1:pcols)                             = R_UNDEF
-    npdfdrz_cal(1:pcols)                             = R_UNDEF
-    npdfrain_cal(1:pcols)                            = R_UNDEF
+    npdfslwc_cal(1:pcols)                             = R_UNDEF
     lsmallcot(1:pcols)                               = R_UNDEF
     mice(1:pcols)                                    = R_UNDEF
     lsmallreff(1:pcols)                              = R_UNDEF
@@ -2792,7 +2787,6 @@ slwc_ncot_int = SLWC_NCOT
         cfodd_ntotal7(1:ncol,1:CFODD_NDBZE,1:CFODD_NICOD) = cospOUT%cfodd_ntotal(:,:,:,7)
         cfodd_ntotal8(1:ncol,1:CFODD_NDBZE,1:CFODD_NICOD) = cospOUT%cfodd_ntotal(:,:,:,8)
         cfodd_ntotal9(1:ncol,1:CFODD_NDBZE,1:CFODD_NICOD) = cospOUT%cfodd_ntotal(:,:,:,9)
-        cfodd_ntotal10(1:ncol,1:CFODD_NDBZE,1:CFODD_NICOD) = cospOUT%cfodd_ntotal(:,:,:,10)
         npdfcld(1:ncol) = cospOUT%wr_occfreq_ntotal(:,1)
         npdfdrz(1:ncol) = cospOUT%wr_occfreq_ntotal(:,2)
         npdfrain(1:ncol) = cospOUT%wr_occfreq_ntotal(:,3)
@@ -2802,9 +2796,7 @@ slwc_ncot_int = SLWC_NCOT
         npdfcld_multi(1:ncol) = cospOUT%wr_occfreq_ntotal(:,7)
         npdfdrz_multi(1:ncol) = cospOUT%wr_occfreq_ntotal(:,8)
         npdfrain_multi(1:ncol) = cospOUT%wr_occfreq_ntotal(:,9)
-        npdfcld_cal(1:ncol) = cospOUT%wr_occfreq_ntotal(:,10)
-        npdfdrz_cal(1:ncol) = cospOUT%wr_occfreq_ntotal(:,11)
-        npdfrain_cal(1:ncol) = cospOUT%wr_occfreq_ntotal(:,12)
+        npdfslwc_cal(1:ncol) = cospOUT%wr_occfreq_ntotal(:,10)
         lsmallcot(1:ncol) = cospOUT%lsmallcot(:)
         mice(1:ncol) = cospOUT%mice(:)
         lsmallreff(1:ncol) = cospOUT%lsmallreff(:)
@@ -2830,6 +2822,8 @@ slwc_ncot_int = SLWC_NCOT
         slwc_cot8(1:ncol,1:SLWC_NCOT) = cospOUT%slwccot(:,:,8)
         slwc_cot9(1:ncol,1:SLWC_NCOT) = cospOUT%slwccot(:,:,9)
         slwc_cot10(1:ncol,1:SLWC_NCOT) = cospOUT%slwccot(:,:,10)
+        slwc_cot11(1:ncol,1:SLWC_NCOT) = cospOUT%slwccot(:,:,11)
+        slwc_cot12(1:ncol,1:SLWC_NCOT) = cospOUT%slwccot(:,:,12)
     endif
         
         
@@ -2870,7 +2864,6 @@ slwc_ncot_int = SLWC_NCOT
                    cfodd_ntotal7_cs(i,idic) = cfodd_ntotal7(i,id,ih)
                    cfodd_ntotal8_cs(i,idic) = cfodd_ntotal8(i,id,ih)
                    cfodd_ntotal9_cs(i,idic) = cfodd_ntotal9(i,id,ih)
-                   cfodd_ntotal10_cs(i,idic) = cfodd_ntotal10(i,id,ih)
                 end do
             end do
        endif
@@ -3165,9 +3158,6 @@ slwc_ncot_int = SLWC_NCOT
              cfodd_ntotal9_cs(:ncol,:CFODD_NDBZE*CFODD_NICOD) = 0.0_r8
          end where
 
-         where (cfodd_ntotal10_cs(:ncol,:CFODD_NDBZE*CFODD_NICOD) .eq. R_UNDEF)
-             cfodd_ntotal10_cs(:ncol,:CFODD_NDBZE*CFODD_NICOD) = 0.0_r8
-         end where
          
          call outfld('CFODD_NTOTAL1_CS', cfodd_ntotal1_cs, pcols, lchnk)
          call outfld('CFODD_NTOTAL2_CS', cfodd_ntotal2_cs, pcols, lchnk)
@@ -3178,7 +3168,6 @@ slwc_ncot_int = SLWC_NCOT
          call outfld('CFODD_NTOTAL7_CS', cfodd_ntotal7_cs, pcols, lchnk)
          call outfld('CFODD_NTOTAL8_CS', cfodd_ntotal8_cs, pcols, lchnk)
          call outfld('CFODD_NTOTAL9_CS', cfodd_ntotal9_cs, pcols, lchnk)
-         call outfld('CFODD_NTOTAL10_CS', cfodd_ntotal10_cs, pcols, lchnk)
          call outfld('npdfcld', npdfcld, pcols, lchnk)
          call outfld('npdfdrz', npdfdrz, pcols, lchnk)
          call outfld('npdfrain', npdfrain, pcols, lchnk)
@@ -3188,9 +3177,7 @@ slwc_ncot_int = SLWC_NCOT
          call outfld('npdfcld_multi', npdfcld_multi, pcols, lchnk)
          call outfld('npdfdrz_multi', npdfdrz_multi, pcols, lchnk)
          call outfld('npdfrain_multi', npdfrain_multi, pcols, lchnk)
-         call outfld('npdfcld_cal', npdfcld_cal, pcols, lchnk)
-         call outfld('npdfdrz_cal', npdfdrz_cal, pcols, lchnk)
-         call outfld('npdfrain_cal', npdfrain_cal, pcols, lchnk)
+         call outfld('npdfslwc_cal', npdfslwc_cal, pcols, lchnk)
          call outfld('lsmallcot',lsmallcot, pcols, lchnk)
          call outfld('mice', mice, pcols, lchnk)
          call outfld('lsmallreff', lsmallreff, pcols, lchnk)
@@ -3216,6 +3203,8 @@ slwc_ncot_int = SLWC_NCOT
          call outfld('SLWC_COT8', slwc_cot8, pcols, lchnk)
          call outfld('SLWC_COT9', slwc_cot9, pcols, lchnk)
          call outfld('SLWC_COT10', slwc_cot10, pcols, lchnk)
+         call outfld('SLWC_COT11', slwc_cot11, pcols, lchnk)
+         call outfld('SLWC_COT12', slwc_cot12, pcols, lchnk)
     endif    
     ! CMB Accumulating scops_out to approximate cloud fraction
     where (scops_out .eq. 1) 
@@ -4054,7 +4043,7 @@ allocate(x%coldct(Npoints))
 allocate(x%coldct_cal(Npoints))
 allocate(x%calice(Npoints))
 allocate(x%obs_ntotal(Npoints,NOBSTYPE))
-allocate(x%slwccot(Npoints,SLWC_NCOT,CFODD_NCLASS))
+allocate(x%slwccot(Npoints,SLWC_NCOT,COT_NCLASS))
     !endif
         
   end subroutine construct_cosp_outputs
