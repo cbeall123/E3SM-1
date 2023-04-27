@@ -50,7 +50,7 @@ MODULE MOD_COSP
                                          modis_histTauEdges,tau_binEdges,nCloudsatPrecipClass,&
                                          modis_histTauCenters,tau_binCenters,            &
                                          cloudsat_preclvl,grLidar532_histBsct,atlid_histBsct, &
-                                         SLWC_NCOT
+                                         SLWC_NCOT,COT_NCLASS
   USE MOD_COSP_MODIS_INTERFACE,      ONLY: cosp_modis_init,       modis_IN
   USE MOD_COSP_RTTOV_INTERFACE,      ONLY: cosp_rttov_init,       rttov_IN
   USE MOD_COSP_MISR_INTERFACE,       ONLY: cosp_misr_init,        misr_IN
@@ -422,7 +422,7 @@ CONTAINS
          coldct_cal(:),          & ! # of subcolumns excluded because cold cloud top temp, detected by CALIPSO
          calice(:),              & ! columns excluded where CALIPSO detected ice
          obs_ntotal(:,:),        & ! # of total samples, clear-sky and cloud-sky in warmrain diags (Npoints, NOBSTYPE)
-         slwccot(:,:,:)              ! # of SLWCs, binned by COT between 0 and 100  (Npoints, SLWC_NCOT,CFODD_NCLASS)
+         slwccot(:,:,:)            ! # of SLWCs, binned by COT between 0 and 100  (Npoints, SLWC_NCOT,CFODD_NCLASS)
          
 
     ! Initialize error reporting for output
@@ -1655,7 +1655,7 @@ CONTAINS
        allocate( coldct_cal(cloudsatIN%Npoints) )
        allocate( calice(cloudsatIN%Npoints) )
        allocate( obs_ntotal(cloudsatIN%Npoints, NOBSTYPE) )
-       allocate( slwccot(cloudsatIN%Npoints, SLWC_NCOT,CFODD_NCLASS) )
+       allocate( slwccot(cloudsatIN%Npoints, SLWC_NCOT,COT_NCLASS) )
        if ( use_vgrid ) then
           !! interporation for fixed vertical grid:
           allocate( zlev(cloudsatIN%Npoints,Nlvgrid),                           &
@@ -1721,7 +1721,7 @@ CONTAINS
                cospOUT%modis_Cloud_Fraction_Ice_Mean,                         & !! in
                frac_outI,                                                     & !! in
                Ze_totI,                                                       & !! in
-               tautot_liqI, tautot_iceI, cospOUT%calipso_lidarcldphase,       & !! in
+               tautot_liqI, tautot_iceI, cospOUT%calipso_lidarcldflag,       & !! in
                cfodd_ntotal, wr_occfreq_ntotal,                               & !! inout
                lsmallcot, mice, lsmallreff, lbigreff,                         & !! inout
                nmultilcld, nfracmulti, nhetcld, coldct, coldct_cal, calice,   & !! inout
@@ -1744,7 +1744,7 @@ CONTAINS
                cospIN%frac_out,                                               & !! in
                cloudsatDBZe,                                                  & !! in
                calipsoIN%tautot_liq, calipsoIN%tautot_ice,                    & !! in
-               cospOUT%calipso_lidarcldphase,                                 & !! in
+               cospOUT%calipso_lidarcldflag,                                 & !! in
                cfodd_ntotal, wr_occfreq_ntotal,                               & !! inout
                lsmallcot, mice, lsmallreff, lbigreff,                         & !! inout
                nmultilcld, nfracmulti, nhetcld, coldct, coldct_cal, calice,   & !! inout
