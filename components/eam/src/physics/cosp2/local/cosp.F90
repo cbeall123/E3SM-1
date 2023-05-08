@@ -382,6 +382,8 @@ CONTAINS
 
     integer, dimension(:,:),allocatable  :: &
          modisRetrievedPhase,isccpLEVMATCH
+    logical, dimension(:,:),allocatable  :: &
+         modisCloudMask
     real(wp), dimension(:),  allocatable  :: &
          modisCfTotal,modisCfLiquid,modisMeanIceWaterPath, isccp_meantbclr,     &
          modisCfIce, modisCfHigh, modisCfMid, modisCfLow,modisMeanTauTotal,     &
@@ -1349,7 +1351,8 @@ CONTAINS
                    modisMeanIceWaterPath(modisIN%nSunlit),                               &
                    modisJointHistogram(modisIN%nSunlit,numMODISTauBins,numMODISPresBins),&
                    modisJointHistogramIce(modisIN%nSunlit,numModisTauBins,numMODISReffIceBins),&
-                   modisJointHistogramLiq(modisIN%nSunlit,numModisTauBins,numMODISReffLiqBins))
+                   modisJointHistogramLiq(modisIN%nSunlit,numModisTauBins,numMODISReffLiqBins),&
+                   modisCloudMask(modisIN%nSunlit,modisIN%Ncolumns))
           ! Call simulator
           call modis_column(modisIN%nSunlit, modisIN%Ncolumns,modisRetrievedPhase,       &
                              modisRetrievedCloudTopPressure,modisRetrievedTau,           &
@@ -1360,7 +1363,8 @@ CONTAINS
                              modisMeanSizeLiquid, modisMeanSizeIce,                      &
                              modisMeanCloudTopPressure, modisMeanLiquidWaterPath,        &
                              modisMeanIceWaterPath, modisJointHistogram,                 &
-                             modisJointHistogramIce,modisJointHistogramLiq)
+                             modisJointHistogramIce,modisJointHistogramLiq,              &
+                             modisCloudMask)
           ! Store data (if requested)
           if (associated(cospOUT%modis_Cloud_Fraction_Total_Mean)) then
              cospOUT%modis_Cloud_Fraction_Total_Mean(ij+int(modisIN%sunlit(:))-1)   =    &
@@ -1529,6 +1533,7 @@ CONTAINS
        if (allocated(modisRetrievedSize))              deallocate(modisRetrievedSize)
        if (allocated(modisRetrievedPhase))             deallocate(modisRetrievedPhase)
        if (allocated(modisRetrievedCloudTopPressure))  deallocate(modisRetrievedCloudTopPressure)
+       if (allocated(modisCloudMask))                  deallocate(modisCloudMask)
        if (allocated(modisCftotal))                    deallocate(modisCftotal)
        if (allocated(modisCfLiquid))                   deallocate(modisCfLiquid)
        if (allocated(modisCfIce))                      deallocate(modisCfIce)
