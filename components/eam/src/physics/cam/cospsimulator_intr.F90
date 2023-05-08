@@ -1313,6 +1313,10 @@ slwc_ncot_int = SLWC_NCOT
     call add_default ('CV_SCOPSOUT',cosp_histfile_num,' ')
     call add_default ('CTOT_SCOPSOUT',cosp_histfile_num,' ')
 
+    ! CMB Adding MODIS or CALIPSO composite cloud fraction
+    call addfld ('MODIS_CALIPSO_CF',horiz_only, 'A', '%', '"MODIS or CALIPSO" composite total cloud fraction', flag_xyfill=.true.,&
+            fill_value=R_UNDEF)
+    call add_default('MODIS_CALIPSO_CF',cosp_histfile_num,' ')
 
     
     !! ADDFLD, ADD_DEFAULT, OUTFLD CALLS FOR COSP OUTPUTS IF RUNNING COSP OFF-LINE
@@ -1849,6 +1853,7 @@ slwc_ncot_int = SLWC_NCOT
     real(r8) :: obs_ntotal1(pcols)
     real(r8) :: obs_ntotal2(pcols)
     real(r8) :: obs_ntotal3(pcols)
+    real(r8) :: modis_calipso_cf(pcols)
     
     real(r8),dimension(pcols,nhtml_cosp*nscol_cosp) :: &
          tau067_out,emis11_out,fracliq_out,cal_betatot,cal_betatot_ice, &
@@ -2059,6 +2064,7 @@ slwc_ncot_int = SLWC_NCOT
     asym34_out(1:pcols,1:nhtml_cosp*nscol_cosp)      = R_UNDEF ! +cosp2
     ssa34_out(1:pcols,1:nhtml_cosp*nscol_cosp)      = R_UNDEF ! +cosp2
     fracLiq_out(1:pcols,1:nhtml_cosp*nscol_cosp)      = R_UNDEF ! +cosp2
+    modis_calipso_cf(1:pcols)                        = R_UNDEF !CMB
 
     ! ######################################################################################
     ! DECIDE WHICH COLUMNS YOU ARE GOING TO RUN COSP ON....
@@ -2776,6 +2782,9 @@ slwc_ncot_int = SLWC_NCOT
        clrlmodis(1:ncol,1:ntau_cosp_modis,1:numMODISReffLiqBins) = cospOUT%modis_Optical_Thickness_vs_ReffLIQ           
     endif
  
+    if ((lmodis_sim) .and. (llidar_sim)) then
+        modis_calipso_cf(1:ncol) = cospOUT%modis_calipso_cf(:)
+    endif
     
     if ((lradar_sim) .and. (lmodis_sim) .and. (llidar_sim)) then
         cfodd_ntotal1(1:ncol,1:CFODD_NDBZE,1:CFODD_NICOD) = cospOUT%cfodd_ntotal(:,:,:,1)
@@ -3368,6 +3377,11 @@ slwc_ncot_int = SLWC_NCOT
     call outfld('LS_SCOPSOUT',ls_scopsout   ,pcols,lchnk)!!!CMB, should work with accum
     call outfld('CV_SCOPSOUT',cv_scopsout   ,pcols,lchnk)!!!CMB 
     call outfld('CTOT_SCOPSOUT',ctot_scopsout   ,pcols,lchnk)!!!CMB
+    
+    ! CMB CALIPSO or MODIS composite cloud fraction
+    if ( (lmodis_sim) .and. (llidar_sim) ) then
+        call outfld('MODIS_CALIPSO_CF', modis_calipso_cf, pcols, lchnk)
+    endif
 
     call t_stopf("writing_output")
 #endif
@@ -3985,6 +3999,7 @@ slwc_ncot_int = SLWC_NCOT
        allocate(x%modis_Optical_Thickness_vs_Cloud_Top_Pressure(nPoints,numModisTauBins,numMODISPresBins))
        allocate(x%modis_Optical_thickness_vs_ReffLIQ(nPoints,numMODISTauBins,numMODISReffLiqBins))   
        allocate(x%modis_Optical_Thickness_vs_ReffICE(nPoints,numMODISTauBins,numMODISReffIceBins))
+       allocate(x%modis_CloudMask(Npoints,Ncolumns))
     endif
     
     ! CALIPSO simulator
@@ -3998,6 +4013,7 @@ slwc_ncot_int = SLWC_NCOT
        allocate(x%calipso_cldlayer(Npoints,LIDAR_NCAT))        
        allocate(x%calipso_lidarcldphase(Npoints,Nlvgrid,6))
        allocate(x%calipso_lidarcldflag(Npoints,Ncolumns,Nlvgrid))
+       allocate(x%calipso_lidarcldflag_cs(Npoints,Ncolumns))
        allocate(x%calipso_lidarcldtmp(Npoints,LIDAR_NTEMP,5))
        allocate(x%calipso_cldlayerphase(Npoints,LIDAR_NCAT,6))     
        ! These 2 outputs are part of the calipso output type, but are not controlled by an 
@@ -4045,7 +4061,9 @@ allocate(x%calice(Npoints))
 allocate(x%obs_ntotal(Npoints,NOBSTYPE))
 allocate(x%slwccot(Npoints,SLWC_NCOT,COT_NCLASS))
     !endif
-        
+    if((lmodis_sim) .and. (llidar_sim)) then
+        allocate(x%modis_calipso_cf(Npoints)
+    endif
   end subroutine construct_cosp_outputs
 
   !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -4142,6 +4160,10 @@ allocate(x%slwccot(Npoints,SLWC_NCOT,COT_NCLASS))
      if (associated(y%calipso_lidarcldflag))     then
         deallocate(y%calipso_lidarcldflag)
         nullify(y%calipso_lidarcldflag)     
+     endif
+     if (associated(y%calipso_lidarcldflag_cs))     then
+        deallocate(y%calipso_lidarcldflag_cs)
+        nullify(y%calipso_lidarcldflag_cs)     
      endif
      if (associated(y%calipso_cldlayerphase))     then
         deallocate(y%calipso_cldlayerphase)
@@ -4259,6 +4281,10 @@ allocate(x%slwccot(Npoints,SLWC_NCOT,COT_NCLASS))
         deallocate(y%modis_Cloud_Fraction_Total_Mean)       
         nullify(y%modis_Cloud_Fraction_Total_Mean)       
      endif
+     if (associated(y%modis_CloudMask))                      then
+        deallocate(y%modis_CloudMask)       
+        nullify(y%modis_CloudMask)       
+     endif
      if (associated(y%modis_Cloud_Fraction_Ice_Mean))                        then
         deallocate(y%modis_Cloud_Fraction_Ice_Mean)     
         nullify(y%modis_Cloud_Fraction_Ice_Mean)     
@@ -4334,6 +4360,10 @@ allocate(x%slwccot(Npoints,SLWC_NCOT,COT_NCLASS))
      if (associated(y%modis_Optical_thickness_vs_ReffICE))                   then
         deallocate(y%modis_Optical_thickness_vs_ReffICE)
         nullify(y%modis_Optical_thickness_vs_ReffICE)
+     endif
+     if (associated(y%modis_calipso_cf))                   then
+        deallocate(y%modis_calipso_cf)
+        nullify(y%modis_calipso_cf)
      endif
      if (associated(y%calipso_cldtype)) then
         deallocate(y%calipso_cldtype)

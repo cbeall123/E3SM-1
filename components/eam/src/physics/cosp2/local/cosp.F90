@@ -382,8 +382,6 @@ CONTAINS
 
     integer, dimension(:,:),allocatable  :: &
          modisRetrievedPhase,isccpLEVMATCH
-    logical, dimension(:,:),allocatable  :: &
-         modisCloudMask
     real(wp), dimension(:),  allocatable  :: &
          modisCfTotal,modisCfLiquid,modisMeanIceWaterPath, isccp_meantbclr,     &
          modisCfIce, modisCfHigh, modisCfMid, modisCfLow,modisMeanTauTotal,     &
@@ -395,7 +393,7 @@ CONTAINS
          modisRetrievedCloudTopPressure,modisRetrievedTau,modisRetrievedSize,   &
          misr_boxtau,misr_boxztop,misr_dist_model_layertops,isccp_boxtau,       &
          isccp_boxttop,isccp_boxptop,calipso_beta_mol,lidar_only_freq_cloud,    &
-         grLidar532_beta_mol,atlid_beta_mol 
+         grLidar532_beta_mol,atlid_beta_mol,modisCloudMask 
     REAL(WP), dimension(:,:,:),allocatable :: &
          modisJointHistogram,modisJointHistogramIce,modisJointHistogramLiq,     &
          calipso_beta_tot,calipso_betaperp_tot, cloudsatDBZe,parasolPix_refl,   &
@@ -1137,6 +1135,7 @@ CONTAINS
             cospgridIN%at(:,:), calipso_betaperp_tot(:,:,:), cospgridIN%surfelev,        & 
             cospOUT%calipso_lidarcldphase(ij:ik,:,:),                                    &
             cospOUT%calipso_lidarcldflag(ij:ik,:,:),                                     &
+            cospOUT%calipso_lidarcldflag_cs(ij:ik,:),                                    &
             cospOUT%calipso_lidarcldtype(ij:ik,:,:),  cospOUT%calipso_cldtype(ij:ik,:),  &
             cospOUT%calipso_cldtypetemp(ij:ik,:), cospOUT%calipso_cldtypemeanz(ij:ik,:), & 
             cospOUT%calipso_cldtypemeanzse(ij:ik,:), cospOUT%calipso_cldthinemis(ij:ik), &
@@ -1370,6 +1369,10 @@ CONTAINS
              cospOUT%modis_Cloud_Fraction_Total_Mean(ij+int(modisIN%sunlit(:))-1)   =    &
                   modisCfTotal
           endif
+          if (associated(cospOUT%modis_CloudMask)) then
+             cospOUT%modis_CloudMask(ij+int(modisIN%sunlit(:))-1)   =    &
+                  modisCloudMask
+          endif
           if (associated(cospOUT%modis_Cloud_Fraction_Water_Mean)) then
              cospOUT%modis_Cloud_Fraction_Water_Mean(ij+int(modisIN%sunlit(:))-1)   =    &
                   modisCfLiquid
@@ -1454,6 +1457,8 @@ CONTAINS
              ! Where it's night and we haven't done the retrievals the values are undefined
              if (associated(cospOUT%modis_Cloud_Fraction_Total_Mean))                    &
                 cospOUT%modis_Cloud_Fraction_Total_Mean(ij+int(modisIN%notSunlit(:))-1) = R_UNDEF
+             if (associated(cospOUT%modis_CloudMask))                    &
+                cospOUT%modis_CloudMask(ij+int(modisIN%notSunlit(:))-1) = R_UNDEF
              if (associated(cospOUT%modis_Cloud_Fraction_Water_Mean))                    &
                 cospOUT%modis_Cloud_Fraction_Water_Mean(ij+int(modisIN%notSunlit(:))-1) = R_UNDEF
              if (associated(cospOUT%modis_Cloud_Fraction_Ice_Mean))                      &
@@ -1493,6 +1498,8 @@ CONTAINS
           ! It's nightime everywhere - everything is undefined
           if (associated(cospOUT%modis_Cloud_Fraction_Total_Mean))                       &
              cospOUT%modis_Cloud_Fraction_Total_Mean(ij:ik) = R_UNDEF
+          if (associated(cospOUT%modis_CloudMask))                       &
+             cospOUT%modis_CloudMask(ij:ik) = R_UNDEF
           if (associated(cospOUT%modis_Cloud_Fraction_Water_Mean))                       &
              cospOUT%modis_Cloud_Fraction_Water_Mean(ij:ik) = R_UNDEF
           if (associated(cospOUT%modis_Cloud_Fraction_Ice_Mean))                         &
@@ -1799,6 +1806,23 @@ CONTAINS
        if ( associated(cospOUT%slwccot) ) then
           cospOUT%slwccot(ij:ik,:,:) = slwccot
        endif
+    endif
+    
+    ! "CALIPSO or MODIS" composite cloud fraction
+    if (Lmodis_subcolumn .and. Lcalipso_subcolumn) then
+        where( (cospOUT%modis_CloudMask .eq. 1._wp) .or. &
+               (cospOUT%calipso_lidarcldflag_cls .eq. 1._wp) )
+               modis_calipso_cldflag = 1._wp
+        elsewhere
+               modis_calipso_cldflag = 0._wp
+        end where
+        
+        modis_calipso_cf(:) = SUM(modis_calipso_cldflag, DIM=2)
+        modis_calipso_cf(:) = modis_calipso_cf(:) / FLOAT(calipsoIN%Ncolumns) * 100._wp
+        
+        if ( associated(cospOUT%modis_calipso_cf) ) then
+            cospOUT%modis_calipso_cf(ij:ik) = modis_calipso_cf
+        endif
     endif
     
     !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2815,6 +2839,7 @@ CONTAINS
           if (associated(cospOUT%calice)) cospOUT%calice(:) = R_UNDEF
           if (associated(cospOUT%obs_ntotal)) cospOUT%obs_ntotal(:,:) = R_UNDEF
           if (associated(cospOUT%slwccot)) cospOUT%slwccot(:,:,:) = R_UNDEF
+          if (associated(cospOUT%modis_calipso_cf)) cospOUT%modis_calipso_cf(:) = R_UNDEF
        endif
     endif
 
@@ -2881,6 +2906,7 @@ CONTAINS
           if (associated(cospOUT%calice)) cospOUT%calice(:) = R_UNDEF
           if (associated(cospOUT%obs_ntotal)) cospOUT%obs_ntotal(:,:) = R_UNDEF
           if (associated(cospOUT%slwccot)) cospOUT%slwccot(:,:,:) = R_UNDEF
+          if (associated(cospOUT%modis_calipso_cf)) cospOUT%modis_calipso_cf(:) = R_UNDEF
        endif
     endif
     if (any([Lisccp_subcolumn, Lisccp_column, Lrttov_column])) then
@@ -3064,6 +3090,7 @@ CONTAINS
           if (associated(cospOUT%calice)) cospOUT%calice(:) = R_UNDEF
           if (associated(cospOUT%obs_ntotal)) cospOUT%obs_ntotal(:,:) = R_UNDEF
           if (associated(cospOUT%slwccot)) cospOUT%slwccot(:,:,:) = R_UNDEF
+          if (associated(cospOUT%modis_calipso_cf)) cospOUT%modis_calipso_cf(:) = R_UNDEF
        endif
     endif
     if (any([Lrttov_column,Lcloudsat_column,Lcalipso_column,Lradar_lidar_tcc,Llidar_only_freq_cloud, &
@@ -3119,6 +3146,7 @@ CONTAINS
           if (associated(cospOUT%calice)) cospOUT%calice(:) = R_UNDEF
           if (associated(cospOUT%obs_ntotal)) cospOUT%obs_ntotal(:,:) = R_UNDEF
           if (associated(cospOUT%slwccot)) cospOUT%slwccot(:,:,:) = R_UNDEF
+          if (associated(cospOUT%modis_calipso_cf)) cospOUT%modis_calipso_cf(:) = R_UNDEF
        endif
     endif
     if (any([Lrttov_column,Lcalipso_column,Lparasol_column])) then
@@ -3733,6 +3761,7 @@ CONTAINS
           if (associated(cospOUT%calice)) cospOUT%calice(:) = R_UNDEF
           if (associated(cospOUT%obs_ntotal)) cospOUT%obs_ntotal(:,:) = R_UNDEF
           if (associated(cospOUT%slwccot)) cospOUT%slwccot(:,:,:) = R_UNDEF
+          if (associated(cospOUT%modis_calipso_cf)) cospOUT%modis_calipso_cf(:) = R_UNDEF
        endif
        if (any(cospIN%kr_vol_cloudsat .lt. 0)) then
           nError=nError+1
@@ -3764,6 +3793,7 @@ CONTAINS
           if (associated(cospOUT%calice)) cospOUT%calice(:) = R_UNDEF
           if (associated(cospOUT%obs_ntotal)) cospOUT%obs_ntotal(:,:) = R_UNDEF
           if (associated(cospOUT%slwccot)) cospOUT%slwccot(:,:,:) = R_UNDEF
+          if (associated(cospOUT%modis_calipso_cf)) cospOUT%modis_calipso_cf(:) = R_UNDEF
        endif
        if (any(cospIN%g_vol_cloudsat .lt. 0)) then
           nError=nError+1
@@ -3795,6 +3825,7 @@ CONTAINS
           if (associated(cospOUT%calice)) cospOUT%calice(:) = R_UNDEF
           if (associated(cospOUT%obs_ntotal)) cospOUT%obs_ntotal(:,:) = R_UNDEF
           if (associated(cospOUT%slwccot)) cospOUT%slwccot(:,:,:) = R_UNDEF
+          if (associated(cospOUT%modis_calipso_cf)) cospOUT%modis_calipso_cf(:) = R_UNDEF
        endif
     endif
     !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
