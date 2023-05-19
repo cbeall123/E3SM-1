@@ -1124,21 +1124,21 @@ slwc_ncot_int = SLWC_NCOT
         call addfld ('CFODD_NTOTAL3_CS',(/'cosp_cfodd_dbze','cosp_cfodd_icod' /),&
              'A','1','# of CFODD (18 < Reff < 35 micron)', flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld ('CFODD_NTOTAL4_CS',(/'cosp_cfodd_dbze','cosp_cfodd_icod' /),&
-             'A','1','# of CFODD CALIPSO detected', flag_xyfill=.true., fill_value=R_UNDEF)
+             'A','1','# of CFODD, small Reff, max dBZ < 20', flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld ('CFODD_NTOTAL5_CS',(/'cosp_cfodd_dbze','cosp_cfodd_icod' /),&
-             'A','1','# of CFODD MODIS, med reff, cold cloud top', flag_xyfill=.true.,&
+             'A','1','# of CFODD, med Reff, max dBZ < 20', flag_xyfill=.true.,&
               fill_value=R_UNDEF)
         call addfld ('CFODD_NTOTAL6_CS',(/'cosp_cfodd_dbze','cosp_cfodd_icod' /),&
-              'A','1','# of CFODD MODIS, large reff, cold cloud top ', flag_xyfill=.true.,&
+              'A','1','# of CFODD, large reff, max dBZ<20, cot<20', flag_xyfill=.true.,&
               fill_value=R_UNDEF)
         call addfld ('CFODD_NTOTAL7_CS',(/'cosp_cfodd_dbze','cosp_cfodd_icod' /),&
-              'A','1','# of CFODD MODIS, small reff, multil ', flag_xyfill=.true.,&
+              'A','1','# of CFODD, small reff, max dBZ<20, 4<=cot<20', flag_xyfill=.true.,&
               fill_value=R_UNDEF)
        call addfld ('CFODD_NTOTAL8_CS',(/'cosp_cfodd_dbze','cosp_cfodd_icod' /),&
-              'A','1','# of CFODD MODIS, med reff, multil ', flag_xyfill=.true.,&
+              'A','1','# of CFODD, med reff, max dBZ<20, 4<=cot<20', flag_xyfill=.true.,&
               fill_value=R_UNDEF)
        call addfld ('CFODD_NTOTAL9_CS',(/'cosp_cfodd_dbze','cosp_cfodd_icod' /),&
-              'A','1','# of CFODD MODIS, large reff, multil', flag_xyfill=.true.,&
+              'A','1','# of CFODD, large reff, max dBZ<20, 4<=cot<20', flag_xyfill=.true.,&
               fill_value=R_UNDEF)
             
         call addfld ('SLWC_COT1',(/'cosp_slwc_cot' /),&
@@ -1151,22 +1151,22 @@ slwc_ncot_int = SLWC_NCOT
              '# of SLWCs (18 <= Reff < 35 micron) binned by MODIS cloud optical thickness',&
              flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld ('SLWC_COT4',(/'cosp_slwc_cot' /), 'A','1',&
-             '# of SLWCs small Reff, cold cloud top, binned by MODIS cloud optical thickness',&
+             '# of SLWCs small Reff, max dBZ < 20, cot < 20, binned by MODIS cloud optical thickness',&
              flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld ('SLWC_COT5',(/'cosp_slwc_cot' /), 'A','1',&
-             '# of SLWCs med Reff, cold cloud top, binned by MODIS cloud optical thickness',&
+             '# of SLWCs med Reff, max dBZ < 20, cot < 20, binned by MODIS cloud optical thickness',&
              flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld ('SLWC_COT6',(/'cosp_slwc_cot' /), 'A','1',&
-              '# of SLWCs large Reff, cold cloud top, binned by MODIS cloud optical thickness',&
+              '# of SLWCs large Reff, max dBZ < 20, cot < 20, binned by MODIS cloud optical thickness',&
               flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld ('SLWC_COT7',(/'cosp_slwc_cot' /), 'A','1',&
-              '# of SLWCs small Reff, cold ct, multil, binned by MODIS cloud optical thickness',&
+              '# of SLWCs small Reff, max dBZ<20, 4<=cot<20, binned by MODIS cloud optical thickness',&
               flag_xyfill=.true.,fill_value=R_UNDEF)
         call addfld ('SLWC_COT8',(/'cosp_slwc_cot' /), 'A','1',&
-             '# of SLWCs med Reff, cold ct, multil, binned by MODIS cloud optical thickness',&
+             '# of SLWCs med Reff, max dBZ<20, 4<=cot<20, binned by MODIS cloud optical thickness',&
               flag_xyfill=.true.,fill_value=R_UNDEF)
        call addfld ('SLWC_COT9',(/'cosp_slwc_cot' /), 'A','1',&
-             '# of SLWCs large Reff, cold ct, multil, binned by MODIS cloud optical thickness',&
+             '# of SLWCs large Reff, max dBZ<20, 4<=cot<20, binned by MODIS cloud optical thickness',&
               flag_xyfill=.true., fill_value=R_UNDEF)
        call addfld ('SLWC_COT10',(/'cosp_slwc_cot' /), 'A','1',&
               '# of SLWCs (05 <= Reff < 12 micron) detected by CALIPSO/MODIS binned by MODIS cloud optical thickness',&
