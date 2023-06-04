@@ -1124,12 +1124,12 @@ slwc_ncot_int = SLWC_NCOT
         call addfld ('CFODD_NTOTAL3_CS',(/'cosp_cfodd_dbze','cosp_cfodd_icod' /),&
              'A','1','# of CFODD (18 < Reff < 35 micron)', flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld ('CFODD_NTOTAL4_CS',(/'cosp_cfodd_dbze','cosp_cfodd_icod' /),&
-             'A','1','# of CFODD, small Reff, max dBZ < 20', flag_xyfill=.true., fill_value=R_UNDEF)
+             'A','1','# of CFODD, small Reff, cot >= 20', flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld ('CFODD_NTOTAL5_CS',(/'cosp_cfodd_dbze','cosp_cfodd_icod' /),&
-             'A','1','# of CFODD, med Reff, max dBZ < 20', flag_xyfill=.true.,&
+             'A','1','# of CFODD, med Reff, cot >= 20', flag_xyfill=.true.,&
               fill_value=R_UNDEF)
         call addfld ('CFODD_NTOTAL6_CS',(/'cosp_cfodd_dbze','cosp_cfodd_icod' /),&
-              'A','1','# of CFODD, large reff, max dBZ<20, cot<20', flag_xyfill=.true.,&
+              'A','1','# of CFODD, large reff, cot >= 20', flag_xyfill=.true.,&
               fill_value=R_UNDEF)
         call addfld ('CFODD_NTOTAL7_CS',(/'cosp_cfodd_dbze','cosp_cfodd_icod' /),&
               'A','1','# of CFODD, small reff, max dBZ<20, 4<=cot<20', flag_xyfill=.true.,&
@@ -1151,13 +1151,13 @@ slwc_ncot_int = SLWC_NCOT
              '# of SLWCs (18 <= Reff < 35 micron) binned by MODIS cloud optical thickness',&
              flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld ('SLWC_COT4',(/'cosp_slwc_cot' /), 'A','1',&
-             '# of SLWCs small Reff, max dBZ < 20, cot < 20, binned by MODIS cloud optical thickness',&
+             '# of SLWCs small Reff, cot >= 20, binned by MODIS cloud optical thickness',&
              flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld ('SLWC_COT5',(/'cosp_slwc_cot' /), 'A','1',&
-             '# of SLWCs med Reff, max dBZ < 20, cot < 20, binned by MODIS cloud optical thickness',&
+             '# of SLWCs med Reff, cot >= 20, binned by MODIS cloud optical thickness',&
              flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld ('SLWC_COT6',(/'cosp_slwc_cot' /), 'A','1',&
-              '# of SLWCs large Reff, max dBZ < 20, cot < 20, binned by MODIS cloud optical thickness',&
+              '# of SLWCs large Reff, cot >= 20, binned by MODIS cloud optical thickness',&
               flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld ('SLWC_COT7',(/'cosp_slwc_cot' /), 'A','1',&
               '# of SLWCs small Reff, max dBZ<20, 4<=cot<20, binned by MODIS cloud optical thickness',&
@@ -1222,15 +1222,15 @@ slwc_ncot_int = SLWC_NCOT
         
         !CB Continue here adding npdfdrz and npdfrain 
         ! int npdfdrz (loc), "number_of_slwc_drizzle"
-        call addfld ('npdfdrz', horiz_only, 'A', '1', '# of Drizzling Clouds"', flag_xyfill=.true., fill_value=R_UNDEF)
+        call addfld ('npdfdrz', horiz_only, 'A', '1', '# of Drizzling Clouds', flag_xyfill=.true., fill_value=R_UNDEF)
         ! int npdfrain (loc), "number_of_slwc_precip"
-        call addfld ('npdfrain', horiz_only, 'A', '1', '# of Precipitating Clouds"', flag_xyfill=.true., fill_value=R_UNDEF)
-        call addfld ('npdfcld_cold', horiz_only, 'A', '1', '# of Non-Precipitating Clouds cold ct', flag_xyfill=.true., fill_value=R_UNDEF)
-        call addfld ('npdfdrz_cold', horiz_only, 'A', '1', '# of Drizzling Clouds cold ct"', flag_xyfill=.true., fill_value=R_UNDEF)
-        call addfld ('npdfrain_cold', horiz_only, 'A', '1', '# of Raining Clouds cold ct"', flag_xyfill=.true., fill_value=R_UNDEF)
-        call addfld ('npdfcld_multi', horiz_only, 'A', '1', '# of Non-Precipitating Clouds multil - fracout', flag_xyfill=.true., fill_value=R_UNDEF)
-        call addfld ('npdfdrz_multi', horiz_only, 'A', '1', '# of Drizzling Clouds multil - fracout"', flag_xyfill=.true., fill_value=R_UNDEF)
-        call addfld ('npdfrain_multi', horiz_only, 'A', '1', '# of Raining Clouds multil - fracout"', flag_xyfill=.true., fill_value=R_UNDEF)
+        call addfld ('npdfrain', horiz_only, 'A', '1', '# of Precipitating Clouds', flag_xyfill=.true., fill_value=R_UNDEF)
+        call addfld ('npdfcld2', horiz_only, 'A', '1', '# of Non-Precipitating Clouds, cot >= 20', flag_xyfill=.true., fill_value=R_UNDEF)
+        call addfld ('npdfdrz2', horiz_only, 'A', '1', '# of Drizzling Clouds, cot >= 20', flag_xyfill=.true., fill_value=R_UNDEF)
+        call addfld ('npdfrain2', horiz_only, 'A', '1', '# of Raining Clouds, cot >= 20', flag_xyfill=.true., fill_value=R_UNDEF)
+        call addfld ('npdfcld3', horiz_only, 'A', '1', '# of Non-Precipitating Clouds, max dBZ < 20, 4<cot<20', flag_xyfill=.true., fill_value=R_UNDEF)
+        call addfld ('npdfdrz3', horiz_only, 'A', '1', '# of Drizzling Clouds, max dBZ < 20, 4<cot<20', flag_xyfill=.true., fill_value=R_UNDEF)
+        call addfld ('npdfrain3', horiz_only, 'A', '1', '# of Raining Clouds, max dBZ < 20, 4<cot<20', flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld ('npdfslwc_calonly', horiz_only, 'A', '1', '# of SLWCs CALIPSO only"', flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld ('npdfslwc_mcal', horiz_only, 'A', '1', '# of SLWCs MODIS and CALIPSO composite only"', flag_xyfill=.true., fill_value=R_UNDEF)
         
@@ -1254,12 +1254,12 @@ slwc_ncot_int = SLWC_NCOT
         call add_default('npdfcld',cosp_histfile_num,' ')
         call add_default('npdfdrz',cosp_histfile_num,' ')
         call add_default('npdfrain',cosp_histfile_num,' ')
-        call add_default('npdfcld_cold',cosp_histfile_num,' ')
-        call add_default('npdfdrz_cold',cosp_histfile_num,' ')
-        call add_default('npdfrain_cold',cosp_histfile_num,' ')
-        call add_default('npdfcld_multi',cosp_histfile_num,' ')
-        call add_default('npdfdrz_multi',cosp_histfile_num,' ')
-        call add_default('npdfrain_multi',cosp_histfile_num,' ')
+        call add_default('npdfcld2',cosp_histfile_num,' ')
+        call add_default('npdfdrz2',cosp_histfile_num,' ')
+        call add_default('npdfrain2',cosp_histfile_num,' ')
+        call add_default('npdfcld3',cosp_histfile_num,' ')
+        call add_default('npdfdrz3',cosp_histfile_num,' ')
+        call add_default('npdfrain3',cosp_histfile_num,' ')
         call add_default('npdfslwc_mcal',cosp_histfile_num,' ')
         call add_default('npdfslwc_calonly',cosp_histfile_num,' ')
         call add_default('lsmallcot',cosp_histfile_num,' ')
@@ -1832,12 +1832,12 @@ slwc_ncot_int = SLWC_NCOT
     real(r8) :: npdfcld(pcols)
     real(r8) :: npdfdrz(pcols)
     real(r8) :: npdfrain(pcols)
-    real(r8) :: npdfcld_cold(pcols)
-    real(r8) :: npdfdrz_cold(pcols)
-    real(r8) :: npdfrain_cold(pcols)
-    real(r8) :: npdfcld_multi(pcols)
-    real(r8) :: npdfdrz_multi(pcols)
-    real(r8) :: npdfrain_multi(pcols)
+    real(r8) :: npdfcld2(pcols)
+    real(r8) :: npdfdrz2(pcols)
+    real(r8) :: npdfrain2(pcols)
+    real(r8) :: npdfcld3(pcols)
+    real(r8) :: npdfdrz3(pcols)
+    real(r8) :: npdfrain3(pcols)
     real(r8) :: npdfslwc_mcal(pcols)
     real(r8) :: npdfslwc_calonly(pcols)
     real(r8) :: lsmallcot(pcols)
@@ -1982,12 +1982,12 @@ slwc_ncot_int = SLWC_NCOT
     npdfcld(1:pcols)                                 = R_UNDEF
     npdfdrz(1:pcols)                                 = R_UNDEF
     npdfrain(1:pcols)                                = R_UNDEF
-    npdfcld_cold(1:pcols)                            = R_UNDEF
-    npdfdrz_cold(1:pcols)                            = R_UNDEF
-    npdfrain_cold(1:pcols)                           = R_UNDEF
-    npdfcld_multi(1:pcols)                           = R_UNDEF
-    npdfdrz_multi(1:pcols)                           = R_UNDEF
-    npdfrain_multi(1:pcols)                          = R_UNDEF
+    npdfcld2(1:pcols)                            = R_UNDEF
+    npdfdrz2(1:pcols)                            = R_UNDEF
+    npdfrain2(1:pcols)                           = R_UNDEF
+    npdfcld3(1:pcols)                           = R_UNDEF
+    npdfdrz3(1:pcols)                           = R_UNDEF
+    npdfrain3(1:pcols)                          = R_UNDEF
     npdfslwc_mcal(1:pcols)                           = R_UNDEF
     npdfslwc_calonly(1:pcols)                        = R_UNDEF
     lsmallcot(1:pcols)                               = R_UNDEF
@@ -2803,12 +2803,12 @@ slwc_ncot_int = SLWC_NCOT
         npdfcld(1:ncol) = cospOUT%wr_occfreq_ntotal(:,1)
         npdfdrz(1:ncol) = cospOUT%wr_occfreq_ntotal(:,2)
         npdfrain(1:ncol) = cospOUT%wr_occfreq_ntotal(:,3)
-        npdfcld_cold(1:ncol) = cospOUT%wr_occfreq_ntotal(:,4)
-        npdfdrz_cold(1:ncol) = cospOUT%wr_occfreq_ntotal(:,5)
-        npdfrain_cold(1:ncol) = cospOUT%wr_occfreq_ntotal(:,6)
-        npdfcld_multi(1:ncol) = cospOUT%wr_occfreq_ntotal(:,7)
-        npdfdrz_multi(1:ncol) = cospOUT%wr_occfreq_ntotal(:,8)
-        npdfrain_multi(1:ncol) = cospOUT%wr_occfreq_ntotal(:,9)
+        npdfcld2(1:ncol) = cospOUT%wr_occfreq_ntotal(:,4)
+        npdfdrz2(1:ncol) = cospOUT%wr_occfreq_ntotal(:,5)
+        npdfrain2(1:ncol) = cospOUT%wr_occfreq_ntotal(:,6)
+        npdfcld3(1:ncol) = cospOUT%wr_occfreq_ntotal(:,7)
+        npdfdrz3(1:ncol) = cospOUT%wr_occfreq_ntotal(:,8)
+        npdfrain3(1:ncol) = cospOUT%wr_occfreq_ntotal(:,9)
         npdfslwc_mcal(1:ncol) = cospOUT%wr_occfreq_ntotal(:,10)
         npdfslwc_calonly(1:ncol) = cospOUT%wr_occfreq_ntotal(:,11)
         lsmallcot(1:ncol) = cospOUT%lsmallcot(:)
@@ -3185,12 +3185,12 @@ slwc_ncot_int = SLWC_NCOT
          call outfld('npdfcld', npdfcld, pcols, lchnk)
          call outfld('npdfdrz', npdfdrz, pcols, lchnk)
          call outfld('npdfrain', npdfrain, pcols, lchnk)
-         call outfld('npdfcld_cold', npdfcld_cold, pcols, lchnk)
-         call outfld('npdfdrz_cold', npdfdrz_cold, pcols, lchnk)
-         call outfld('npdfrain_cold', npdfrain_cold, pcols, lchnk)
-         call outfld('npdfcld_multi', npdfcld_multi, pcols, lchnk)
-         call outfld('npdfdrz_multi', npdfdrz_multi, pcols, lchnk)
-         call outfld('npdfrain_multi', npdfrain_multi, pcols, lchnk)
+         call outfld('npdfcld2', npdfcld2, pcols, lchnk)
+         call outfld('npdfdrz2', npdfdrz2, pcols, lchnk)
+         call outfld('npdfrain2', npdfrain2, pcols, lchnk)
+         call outfld('npdfcld3', npdfcld3, pcols, lchnk)
+         call outfld('npdfdrz3', npdfdrz3, pcols, lchnk)
+         call outfld('npdfrain3', npdfrain3, pcols, lchnk)
          call outfld('npdfslwc_mcal', npdfslwc_mcal, pcols, lchnk)
          call outfld('npdfslwc_calonly', npdfslwc_calonly, pcols, lchnk)
          call outfld('lsmallcot',lsmallcot, pcols, lchnk)
