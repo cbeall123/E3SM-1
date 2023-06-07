@@ -322,7 +322,7 @@ MODULE MOD_COSP
           nfracmulti => null()         ! # of multilayer cloud subcolumns counted by fracout, only for MODIS/CloudSat currently
      !Joint CALIPSO+MODIS simulator outputs
      real(wp),dimension(:),pointer :: &
-          modis_calipso_cf => null()
+          modis_calipso_cf => null(), &
           modisandcalipso_cf => null()
   end type cosp_outputs
 
