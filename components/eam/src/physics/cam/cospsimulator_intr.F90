@@ -1319,6 +1319,10 @@ slwc_ncot_int = SLWC_NCOT
     call addfld ('MODIS_CALIPSO_CF',horiz_only, 'A', '%', '"MODIS or CALIPSO" composite total cloud fraction', flag_xyfill=.true.,&
             fill_value=R_UNDEF)
     call add_default('MODIS_CALIPSO_CF',cosp_histfile_num,' ')
+    call addfld ('MODISANDCALIPSO_CF',horiz_only, 'A', '%', '"MODIS and CALIPSO" composite total cloud fraction', flag_xyfill=.true.,&
+            fill_value=R_UNDEF)
+    call add_default('MODISANDCALIPSO_CF',cosp_histfile_num,' ')
+
 
     
     !! ADDFLD, ADD_DEFAULT, OUTFLD CALLS FOR COSP OUTPUTS IF RUNNING COSP OFF-LINE
@@ -1857,6 +1861,7 @@ slwc_ncot_int = SLWC_NCOT
     real(r8) :: obs_ntotal2(pcols)
     real(r8) :: obs_ntotal3(pcols)
     real(r8) :: modis_calipso_cf(pcols)
+    real(r8) :: modisandcalipso_cf(pcols)
     
     real(r8),dimension(pcols,nhtml_cosp*nscol_cosp) :: &
          tau067_out,emis11_out,fracliq_out,cal_betatot,cal_betatot_ice, &
@@ -2069,6 +2074,7 @@ slwc_ncot_int = SLWC_NCOT
     ssa34_out(1:pcols,1:nhtml_cosp*nscol_cosp)      = R_UNDEF ! +cosp2
     fracLiq_out(1:pcols,1:nhtml_cosp*nscol_cosp)      = R_UNDEF ! +cosp2
     modis_calipso_cf(1:pcols)                        = R_UNDEF !CMB
+    modisandcalipso_cf(1:pcols)                        = R_UNDEF !CMB
 
     ! ######################################################################################
     ! DECIDE WHICH COLUMNS YOU ARE GOING TO RUN COSP ON....
@@ -2788,6 +2794,7 @@ slwc_ncot_int = SLWC_NCOT
  
     if ((lmodis_sim) .and. (llidar_sim)) then
         modis_calipso_cf(1:ncol) = cospOUT%modis_calipso_cf(:)
+        modisandcalipso_cf(1:ncol) = cospOUT%modisandcalipso_cf(:)
     endif
     
     if ((lradar_sim) .and. (lmodis_sim) .and. (llidar_sim)) then
@@ -3388,6 +3395,7 @@ slwc_ncot_int = SLWC_NCOT
     ! CMB CALIPSO or MODIS composite cloud fraction
     if ( (lmodis_sim) .and. (llidar_sim) ) then
         call outfld('MODIS_CALIPSO_CF', modis_calipso_cf, pcols, lchnk)
+        call outfld('MODISANDCALIPSO_CF', modisandcalipso_cf, pcols, lchnk)
     endif
 
     call t_stopf("writing_output")
@@ -4070,6 +4078,7 @@ allocate(x%slwccot(Npoints,SLWC_NCOT,COT_NCLASS))
     !endif
     if((lmodis_sim) .and. (llidar_sim)) then
         allocate(x%modis_calipso_cf(Npoints))
+        allocate(x%modisandcalipso_cf(Npoints))
     endif
   end subroutine construct_cosp_outputs
 
@@ -4371,6 +4380,10 @@ allocate(x%slwccot(Npoints,SLWC_NCOT,COT_NCLASS))
      if (associated(y%modis_calipso_cf))                   then
         deallocate(y%modis_calipso_cf)
         nullify(y%modis_calipso_cf)
+     endif
+     if (associated(y%modisandcalipso_cf))                   then
+        deallocate(y%modisandcalipso_cf)
+        nullify(y%modisandcalipso_cf)
      endif
      if (associated(y%calipso_cldtype)) then
         deallocate(y%calipso_cldtype)
