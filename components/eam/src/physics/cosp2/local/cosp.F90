@@ -290,7 +290,8 @@ MODULE MOD_COSP
           modis_Liquid_Water_Path_Mean => null(),          & ! L3 MODIS retrieved liquid water path
           modis_Ice_Water_Path_Mean => null()                ! L3 MODIS retrieved ice water path
      real(wp),pointer,dimension(:,:) :: &
-          modis_CloudMask => null()                          ! MODIS Cloud Mask (Npoints,Nscol)
+          modis_CloudMask => null(),    &                    ! MODIS Cloud Mask (Npoints,Nscol)
+          modis_iceCloudMask => null()                       ! MODIS Ice Cloud Mask (Npoints,Nscol)
      real(wp),pointer,dimension(:,:,:) ::  &
           modis_Optical_Thickness_vs_Cloud_Top_Pressure => null(), & ! Tau/Pressure joint histogram
           modis_Optical_Thickness_vs_ReffICE => null(),            & ! Tau/ReffICE joint histogram

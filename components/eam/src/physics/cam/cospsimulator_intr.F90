@@ -17,7 +17,7 @@ module cospsimulator_intr
   use cam_abortutils,       only: endrun
   use phys_control,         only: cam_physpkg_is
   use cam_logfile,          only: iulog
-#ifdef 
+#ifdef USE_COSP
   use quickbeam,            only: radar_cfg
   use mod_quickbeam_optics, only: size_distribution
   use mod_cosp,             only: cosp_outputs,cosp_optical_inputs,cosp_column_inputs
@@ -4021,6 +4021,7 @@ slwc_ncot_int = SLWC_NCOT
        allocate(x%modis_Optical_thickness_vs_ReffLIQ(nPoints,numMODISTauBins,numMODISReffLiqBins))   
        allocate(x%modis_Optical_Thickness_vs_ReffICE(nPoints,numMODISTauBins,numMODISReffIceBins))
        allocate(x%modis_CloudMask(Npoints,Ncolumns))
+       allocate(x%modis_iceCloudMask(Npoints,Ncolumns))
     endif
     
     ! CALIPSO simulator
@@ -4307,6 +4308,10 @@ allocate(x%slwccot(Npoints,SLWC_NCOT,COT_NCLASS))
      if (associated(y%modis_CloudMask))                      then
         deallocate(y%modis_CloudMask)       
         nullify(y%modis_CloudMask)       
+     endif
+     if (associated(y%modis_iceCloudMask))                      then
+        deallocate(y%modis_iceCloudMask)
+        nullify(y%modis_iceCloudMask)
      endif
      if (associated(y%modis_Cloud_Fraction_Ice_Mean))                        then
         deallocate(y%modis_Cloud_Fraction_Ice_Mean)     
