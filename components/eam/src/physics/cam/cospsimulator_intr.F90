@@ -1213,8 +1213,6 @@ slwc_ncot_int = SLWC_NCOT
         call add_default ('SLWC_COT10',cosp_histfile_num,' ')
         call add_default ('SLWC_COT11',cosp_histfile_num,' ')
         call add_default ('SLWC_COT12',cosp_histfile_num,' ')
-        !call add_default ('CFODD_NDBZE',cosp_histfile_num, ' ')
-        !call add_default ('CFODD_NICOD',cosp_histfile_num, ' ')
         
         !Warm-rain occurrence frequency diagnostics
         ! int npdfcld (loc), "number_of_slwc_nonprecip"
