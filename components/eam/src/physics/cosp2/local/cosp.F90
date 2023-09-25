@@ -1647,9 +1647,7 @@ CONTAINS
                     t_in(cloudsatIN%Npoints,1,cloudsatIN%Nlevels),              &
                     tempI(cloudsatIN%Npoints,1,Nlvgrid),                        &
                     Ze_totI(cloudsatIN%Npoints,cloudsatIN%Ncolumns,Nlvgrid),    &
-                    frac_outI(cloudsatIN%Npoints,cloudsatIN%Ncolumns,Nlvgrid),  &
-                    tautot_liqI(cloudsatIN%Npoints,cloudsatIN%Ncolumns,Nlvgrid),&
-                    tautot_iceI(cloudsatIN%Npoints,cloudsatIN%Ncolumns,Nlvgrid))
+                    frac_outI(cloudsatIN%Npoints,cloudsatIN%Ncolumns,Nlvgrid) )
 
           do k = 1, Nlvgrid
              zlev(:,k) = vgrid_zu(k)
@@ -1676,23 +1674,7 @@ CONTAINS
                cospIN%frac_out(:,:,cloudsatIN%Nlevels:1:-1), Nlvgrid,         &
                vgrid_zl(Nlvgrid:1:-1), vgrid_zu(Nlvgrid:1:-1),                &
                frac_outI(:,:,Nlvgrid:1:-1)                                    )
-          call cosp_change_vertical_grid (                                    &
-               cloudsatIN%Npoints, cloudsatIN%Ncolumns, cloudsatIN%Nlevels,   &
-               cospgridIN%hgt_matrix(:,cloudsatIN%Nlevels:1:-1),              &
-               cospgridIN%hgt_matrix_half(:,cloudsatIN%Nlevels:1:-1),         &
-               calipsoIN%tautot_liq(:,:,cloudsatIN%Nlevels:1:-1), Nlvgrid,    &
-               vgrid_zl(Nlvgrid:1:-1), vgrid_zu(Nlvgrid:1:-1),                &
-               tautot_liqI(:,:,Nlvgrid:1:-1)                                  )
-          call cosp_change_vertical_grid (                                    &
-               cloudsatIN%Npoints, cloudsatIN%Ncolumns, cloudsatIN%Nlevels,   &
-               cospgridIN%hgt_matrix(:,cloudsatIN%Nlevels:1:-1),              &
-               cospgridIN%hgt_matrix_half(:,cloudsatIN%Nlevels:1:-1),         &
-               calipsoIN%tautot_ice(:,:,cloudsatIN%Nlevels:1:-1), Nlvgrid,    &
-               vgrid_zl(Nlvgrid:1:-1), vgrid_zu(Nlvgrid:1:-1),                &
-               tautot_iceI(:,:,Nlvgrid:1:-1)                                  )
           where (frac_outI .lt. 0) frac_outI = 0._wp                          !CMB setting large negative numbers to 0
-          where (tautot_liqI .lt. 0) tautot_liqI = 0._wp                      !CMB setting large negative numbers to 0
-          where (tautot_iceI .lt. 0) tautot_iceI = 0._wp                      !CMB setting large negative numbers to 0
           call cosp_diag_warmrain(                                            &
                cloudsatIN%Npoints, cloudsatIN%Ncolumns, Nlvgrid,              & !! in
                tempI, zlev, cospgridIN%lchnk, cospgridIN%sunlit,              & !! in

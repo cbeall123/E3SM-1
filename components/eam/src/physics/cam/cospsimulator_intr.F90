@@ -1824,11 +1824,7 @@ slwc_ncot_int = SLWC_NCOT
     slwc_cot6(1:pcols,1:SLWC_NCOT)      = R_UNDEF
     slwc_cot7(1:pcols,1:SLWC_NCOT)      = R_UNDEF
     slwc_cot8(1:pcols,1:SLWC_NCOT)      = R_UNDEF
-    slwc_cot9(1:pcols,1:SLWC_NCOT)      = R_UNDEF
-    slwc_cot10(1:pcols,1:SLWC_NCOT)     = R_UNDEF
-    slwc_cot11(1:pcols,1:SLWC_NCOT)     = R_UNDEF
-    slwc_cot12(1:pcols,1:SLWC_NCOT)     = R_UNDEF
-    
+    slwc_cot9(1:pcols,1:SLWC_NCOT)      = R_UNDEF    
     
     ! (all CAM output variables. including collapsed variables)
     cldtot_isccp(1:pcols)                            = R_UNDEF
