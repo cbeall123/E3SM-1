@@ -1325,6 +1325,9 @@ slwc_ncot_int = SLWC_NCOT
     call addfld ('MODISANDCALIPSO_ICECF',horiz_only, 'A', '%', '"MODIS and CALIPSO" composite ice cloud fraction', flag_xyfill=.true.,&
             fill_value=R_UNDEF)
     call add_default('MODISANDCALIPSO_ICECF',cosp_histfile_num,' ')
+    call addfld ('MODISANDCLOUDSAT_CF',horiz_only, 'A', '%', '"MODIS and CloudSat" composite total cloud fraction', flag_xyfill=.true.,&
+            fill_value=R_UNDEF)
+    call add_default('MODISANDCLOUDSAT_CF',cosp_histfile_num,' ')
 
 
     
@@ -1866,6 +1869,7 @@ slwc_ncot_int = SLWC_NCOT
     real(r8) :: modis_calipso_cf(pcols)
     real(r8) :: modisandcalipso_cf(pcols)
     real(r8) :: modisandcalipso_icecf(pcols)
+    real(r8) :: modisandcloudsat_cf(pcols)
     
     real(r8),dimension(pcols,nhtml_cosp*nscol_cosp) :: &
          tau067_out,emis11_out,fracliq_out,cal_betatot,cal_betatot_ice, &
@@ -2080,6 +2084,7 @@ slwc_ncot_int = SLWC_NCOT
     modis_calipso_cf(1:pcols)                        = R_UNDEF !CMB
     modisandcalipso_cf(1:pcols)                        = R_UNDEF !CMB
     modisandcalipso_icecf(1:pcols)                     = R_UNDEF !CMB
+    modisandcloudsat_cf(1:pcols)                        = R_UNDEF !CMB
     ! ######################################################################################
     ! DECIDE WHICH COLUMNS YOU ARE GOING TO RUN COSP ON....
     ! ######################################################################################
@@ -2801,6 +2806,10 @@ slwc_ncot_int = SLWC_NCOT
         modisandcalipso_cf(1:ncol) = cospOUT%modisandcalipso_cf(:)
         modisandcalipso_icecf(1:ncol) = cospOUT%modisandcalipso_icecf(:)
     endif
+
+    if ((lradar_sim) .and. (lmodis_sim)) then
+        modisandcloudsat_cf(1:ncol) = cospOUT%modisandcloudsat_cf(:)
+    endif
     
     if ((lradar_sim) .and. (lmodis_sim) .and. (llidar_sim)) then
         cfodd_ntotal1(1:ncol,1:CFODD_NDBZE,1:CFODD_NICOD) = cospOUT%cfodd_ntotal(:,:,:,1)
@@ -3402,6 +3411,10 @@ slwc_ncot_int = SLWC_NCOT
         call outfld('MODIS_CALIPSO_CF', modis_calipso_cf, pcols, lchnk)
         call outfld('MODISANDCALIPSO_CF', modisandcalipso_cf, pcols, lchnk)
         call outfld('MODISANDCALIPSO_ICECF', modisandcalipso_icecf, pcols, lchnk)
+    endif
+    ! CMB Cloudsat AND MODIS composite cloud fraction
+    if ( (lmodis_sim) .and. (lradar_sim) ) then
+        call outfld('MODISANDCLOUDSAT_CF', modisandcloudsat_cf, pcols, lchnk)
     endif
 
     call t_stopf("writing_output")
@@ -4082,6 +4095,7 @@ allocate(x%coldct_cal(Npoints))
 allocate(x%calice(Npoints))
 allocate(x%obs_ntotal(Npoints,NOBSTYPE))
 allocate(x%slwccot(Npoints,SLWC_NCOT,COT_NCLASS))
+allocate(x%modisandcloudsat_cf(Npoints))
     !endif
     if((lmodis_sim) .and. (llidar_sim)) then
         allocate(x%modis_calipso_cf(Npoints))
@@ -4400,6 +4414,10 @@ allocate(x%slwccot(Npoints,SLWC_NCOT,COT_NCLASS))
     if (associated(y%modisandcalipso_icecf))                   then
         deallocate(y%modisandcalipso_icecf)
         nullify(y%modisandcalipso_icecf)
+     endif
+     if (associated(y%modisandcloudsat_cf))                   then
+        deallocate(y%modisandcloudsat_cf)
+        nullify(y%modisandcloudsat_cf)
      endif
      if (associated(y%calipso_cldtype)) then
         deallocate(y%calipso_cldtype)
