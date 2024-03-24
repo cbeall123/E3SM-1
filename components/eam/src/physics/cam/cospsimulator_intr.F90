@@ -1140,6 +1140,24 @@ slwc_ncot_int = SLWC_NCOT
        call addfld ('CFODD_NTOTAL9_CS',(/'cosp_cfodd_dbze','cosp_cfodd_icod' /),&
               'A','1','# of CFODD, large reff, max dBZ<20, 4<=cot<20', flag_xyfill=.true.,&
               fill_value=R_UNDEF)
+       call addfld ('CFODD_NTOTAL10_CS',(/'cosp_cfodd_dbze','cosp_cfodd_icod' /),&
+              'A','1','# of CFODD MODIS-CALIPSO, small reff', flag_xyfill=.true.,&
+              fill_value=R_UNDEF)
+       call addfld ('CFODD_NTOTAL11_CS',(/'cosp_cfodd_dbze','cosp_cfodd_icod' /),&
+              'A','1','# of CFODD MODIS-CALIPSO, med reff', flag_xyfill=.true.,&
+              fill_value=R_UNDEF)
+       call addfld ('CFODD_NTOTAL12_CS',(/'cosp_cfodd_dbze','cosp_cfodd_icod' /),&
+              'A','1','# of CFODD MODIS-CALIPSO, large reff', flag_xyfill=.true.,&
+              fill_value=R_UNDEF)
+       call addfld ('CFODD_NTOTAL13_CS',(/'cosp_cfodd_dbze','cosp_cfodd_icod' /),&
+              'A','1','# of CFODD MODIS-CALIPSO, max dBZ<20, 4<=cot<20, small reff', flag_xyfill=.true.,&
+              fill_value=R_UNDEF)
+       call addfld ('CFODD_NTOTAL14_CS',(/'cosp_cfodd_dbze','cosp_cfodd_icod' /),&
+              'A','1','# of CFODD MODIS-CALIPSO, max dBZ<20, 4<=cot<20, med reff', flag_xyfill=.true.,&
+              fill_value=R_UNDEF)
+       call addfld ('CFODD_NTOTAL15_CS',(/'cosp_cfodd_dbze','cosp_cfodd_icod' /),&
+              'A','1','# of CFODD MODIS-CALIPSO, max dBZ<20, 4<=cot<20, large reff', flag_xyfill=.true.,&
+              fill_value=R_UNDEF)	      
             
         call addfld ('SLWC_COT1',(/'cosp_slwc_cot' /),&
              'A','1','# of SLWCs (05 <= Reff < 12 micron) binned by MODIS cloud optical thickness',&
@@ -1201,6 +1219,12 @@ slwc_ncot_int = SLWC_NCOT
         call add_default ('CFODD_NTOTAL7_CS',cosp_histfile_num, ' ')
         call add_default ('CFODD_NTOTAL8_CS',cosp_histfile_num, ' ')
         call add_default ('CFODD_NTOTAL9_CS',cosp_histfile_num, ' ')
+	call add_default ('CFODD_NTOTAL10_CS',cosp_histfile_num, ' ')
+	call add_default ('CFODD_NTOTAL11_CS',cosp_histfile_num, ' ')
+	call add_default ('CFODD_NTOTAL12_CS',cosp_histfile_num, ' ')
+	call add_default ('CFODD_NTOTAL13_CS',cosp_histfile_num, ' ')
+	call add_default ('CFODD_NTOTAL14_CS',cosp_histfile_num, ' ')
+	call add_default ('CFODD_NTOTAL15_CS',cosp_histfile_num, ' ')
         call add_default ('SLWC_COT1',cosp_histfile_num,' ')
         call add_default ('SLWC_COT2',cosp_histfile_num,' ')
         call add_default ('SLWC_COT3',cosp_histfile_num,' ')
@@ -1818,6 +1842,13 @@ slwc_ncot_int = SLWC_NCOT
     real(r8) :: cfodd_ntotal7(pcols,CFODD_NDBZE,CFODD_NICOD)
     real(r8) :: cfodd_ntotal8(pcols,CFODD_NDBZE,CFODD_NICOD)
     real(r8) :: cfodd_ntotal9(pcols,CFODD_NDBZE,CFODD_NICOD)
+    real(r8) :: cfodd_ntotal10(pcols,CFODD_NDBZE,CFODD_NICOD)
+    real(r8) :: cfodd_ntotal11(pcols,CFODD_NDBZE,CFODD_NICOD)
+    real(r8) :: cfodd_ntotal12(pcols,CFODD_NDBZE,CFODD_NICOD)
+    real(r8) :: cfodd_ntotal13(pcols,CFODD_NDBZE,CFODD_NICOD)
+    real(r8) :: cfodd_ntotal14(pcols,CFODD_NDBZE,CFODD_NICOD)
+    real(r8) :: cfodd_ntotal15(pcols,CFODD_NDBZE,CFODD_NICOD)
+    
     real(r8) :: cfodd_ntotal1_cs(pcols,CFODD_NDBZE*CFODD_NICOD)
     real(r8) :: cfodd_ntotal2_cs(pcols,CFODD_NDBZE*CFODD_NICOD)
     real(r8) :: cfodd_ntotal3_cs(pcols,CFODD_NDBZE*CFODD_NICOD)
@@ -1827,6 +1858,12 @@ slwc_ncot_int = SLWC_NCOT
     real(r8) :: cfodd_ntotal7_cs(pcols,CFODD_NDBZE*CFODD_NICOD)
     real(r8) :: cfodd_ntotal8_cs(pcols,CFODD_NDBZE*CFODD_NICOD)
     real(r8) :: cfodd_ntotal9_cs(pcols,CFODD_NDBZE*CFODD_NICOD)
+    real(r8) :: cfodd_ntotal10_cs(pcols,CFODD_NDBZE*CFODD_NICOD)
+    real(r8) :: cfodd_ntotal11_cs(pcols,CFODD_NDBZE*CFODD_NICOD)
+    real(r8) :: cfodd_ntotal12_cs(pcols,CFODD_NDBZE*CFODD_NICOD)
+    real(r8) :: cfodd_ntotal13_cs(pcols,CFODD_NDBZE*CFODD_NICOD)
+    real(r8) :: cfodd_ntotal14_cs(pcols,CFODD_NDBZE*CFODD_NICOD)
+    real(r8) :: cfodd_ntotal15_cs(pcols,CFODD_NDBZE*CFODD_NICOD)
     real(r8) :: slwc_cot1(pcols,SLWC_NCOT)
     real(r8) :: slwc_cot2(pcols,SLWC_NCOT)
     real(r8) :: slwc_cot3(pcols,SLWC_NCOT)
@@ -1921,6 +1958,12 @@ slwc_ncot_int = SLWC_NCOT
     cfodd_ntotal7(1:pcols,1:CFODD_NDBZE,1:CFODD_NICOD) = R_UNDEF
     cfodd_ntotal8(1:pcols,1:CFODD_NDBZE,1:CFODD_NICOD) = R_UNDEF
     cfodd_ntotal9(1:pcols,1:CFODD_NDBZE,1:CFODD_NICOD) = R_UNDEF
+    cfodd_ntotal10(1:pcols,1:CFODD_NDBZE,1:CFODD_NICOD) = R_UNDEF
+    cfodd_ntotal11(1:pcols,1:CFODD_NDBZE,1:CFODD_NICOD) = R_UNDEF
+    cfodd_ntotal12(1:pcols,1:CFODD_NDBZE,1:CFODD_NICOD) = R_UNDEF
+    cfodd_ntotal13(1:pcols,1:CFODD_NDBZE,1:CFODD_NICOD) = R_UNDEF
+    cfodd_ntotal14(1:pcols,1:CFODD_NDBZE,1:CFODD_NICOD) = R_UNDEF
+    cfodd_ntotal15(1:pcols,1:CFODD_NDBZE,1:CFODD_NICOD) = R_UNDEF
     slwc_cot1(1:pcols,1:SLWC_NCOT)      = R_UNDEF
     slwc_cot2(1:pcols,1:SLWC_NCOT)      = R_UNDEF
     slwc_cot3(1:pcols,1:SLWC_NCOT)      = R_UNDEF
@@ -1992,6 +2035,12 @@ slwc_ncot_int = SLWC_NCOT
     cfodd_ntotal7_cs(1:pcols,1:CFODD_NDBZE*CFODD_NICOD) = R_UNDEF
     cfodd_ntotal8_cs(1:pcols,1:CFODD_NDBZE*CFODD_NICOD) = R_UNDEF
     cfodd_ntotal9_cs(1:pcols,1:CFODD_NDBZE*CFODD_NICOD) = R_UNDEF
+    cfodd_ntotal10_cs(1:pcols,1:CFODD_NDBZE*CFODD_NICOD) = R_UNDEF
+    cfodd_ntotal11_cs(1:pcols,1:CFODD_NDBZE*CFODD_NICOD) = R_UNDEF
+    cfodd_ntotal12_cs(1:pcols,1:CFODD_NDBZE*CFODD_NICOD) = R_UNDEF
+    cfodd_ntotal13_cs(1:pcols,1:CFODD_NDBZE*CFODD_NICOD) = R_UNDEF
+    cfodd_ntotal14_cs(1:pcols,1:CFODD_NDBZE*CFODD_NICOD) = R_UNDEF
+    cfodd_ntotal15_cs(1:pcols,1:CFODD_NDBZE*CFODD_NICOD) = R_UNDEF
     npdfcld(1:pcols)                                 = R_UNDEF
     npdfdrz(1:pcols)                                 = R_UNDEF
     npdfrain(1:pcols)                                = R_UNDEF
@@ -2821,6 +2870,12 @@ slwc_ncot_int = SLWC_NCOT
         cfodd_ntotal7(1:ncol,1:CFODD_NDBZE,1:CFODD_NICOD) = cospOUT%cfodd_ntotal(:,:,:,7)
         cfodd_ntotal8(1:ncol,1:CFODD_NDBZE,1:CFODD_NICOD) = cospOUT%cfodd_ntotal(:,:,:,8)
         cfodd_ntotal9(1:ncol,1:CFODD_NDBZE,1:CFODD_NICOD) = cospOUT%cfodd_ntotal(:,:,:,9)
+	cfodd_ntotal10(1:ncol,1:CFODD_NDBZE,1:CFODD_NICOD) = cospOUT%cfodd_ntotal(:,:,:,10)
+	cfodd_ntotal11(1:ncol,1:CFODD_NDBZE,1:CFODD_NICOD) = cospOUT%cfodd_ntotal(:,:,:,11)
+	cfodd_ntotal12(1:ncol,1:CFODD_NDBZE,1:CFODD_NICOD) = cospOUT%cfodd_ntotal(:,:,:,12)
+	cfodd_ntotal13(1:ncol,1:CFODD_NDBZE,1:CFODD_NICOD) = cospOUT%cfodd_ntotal(:,:,:,13)
+	cfodd_ntotal14(1:ncol,1:CFODD_NDBZE,1:CFODD_NICOD) = cospOUT%cfodd_ntotal(:,:,:,14)
+	cfodd_ntotal15(1:ncol,1:CFODD_NDBZE,1:CFODD_NICOD) = cospOUT%cfodd_ntotal(:,:,:,15)
         npdfcld(1:ncol) = cospOUT%wr_occfreq_ntotal(:,1)
         npdfdrz(1:ncol) = cospOUT%wr_occfreq_ntotal(:,2)
         npdfrain(1:ncol) = cospOUT%wr_occfreq_ntotal(:,3)
@@ -2899,6 +2954,12 @@ slwc_ncot_int = SLWC_NCOT
                    cfodd_ntotal7_cs(i,idic) = cfodd_ntotal7(i,id,ih)
                    cfodd_ntotal8_cs(i,idic) = cfodd_ntotal8(i,id,ih)
                    cfodd_ntotal9_cs(i,idic) = cfodd_ntotal9(i,id,ih)
+		   cfodd_ntotal10_cs(i,idic) = cfodd_ntotal10(i,id,ih)
+		   cfodd_ntotal11_cs(i,idic) = cfodd_ntotal11(i,id,ih)
+		   cfodd_ntotal12_cs(i,idic) = cfodd_ntotal12(i,id,ih)
+		   cfodd_ntotal13_cs(i,idic) = cfodd_ntotal13(i,id,ih)
+		   cfodd_ntotal14_cs(i,idic) = cfodd_ntotal14(i,id,ih)
+		   cfodd_ntotal15_cs(i,idic) = cfodd_ntotal15(i,id,ih)
                 end do
             end do
        endif
@@ -3193,6 +3254,30 @@ slwc_ncot_int = SLWC_NCOT
              cfodd_ntotal9_cs(:ncol,:CFODD_NDBZE*CFODD_NICOD) = 0.0_r8
          end where
 
+         where (cfodd_ntotal10_cs(:ncol,:CFODD_NDBZE*CFODD_NICOD) .eq. R_UNDEF)
+             cfodd_ntotal10_cs(:ncol,:CFODD_NDBZE*CFODD_NICOD) = 0.0_r8
+         end where
+
+         where (cfodd_ntotal11_cs(:ncol,:CFODD_NDBZE*CFODD_NICOD) .eq. R_UNDEF)
+             cfodd_ntotal11_cs(:ncol,:CFODD_NDBZE*CFODD_NICOD) = 0.0_r8
+         end where
+
+         where (cfodd_ntotal12_cs(:ncol,:CFODD_NDBZE*CFODD_NICOD) .eq. R_UNDEF)
+             cfodd_ntotal12_cs(:ncol,:CFODD_NDBZE*CFODD_NICOD) = 0.0_r8
+         end where
+
+         where (cfodd_ntotal13_cs(:ncol,:CFODD_NDBZE*CFODD_NICOD) .eq. R_UNDEF)
+             cfodd_ntotal13_cs(:ncol,:CFODD_NDBZE*CFODD_NICOD) = 0.0_r8
+         end where
+
+	 where (cfodd_ntotal14_cs(:ncol,:CFODD_NDBZE*CFODD_NICOD) .eq. R_UNDEF)
+             cfodd_ntotal14_cs(:ncol,:CFODD_NDBZE*CFODD_NICOD) = 0.0_r8
+         end where
+
+	 where (cfodd_ntotal15_cs(:ncol,:CFODD_NDBZE*CFODD_NICOD) .eq. R_UNDEF)
+             cfodd_ntotal15_cs(:ncol,:CFODD_NDBZE*CFODD_NICOD) = 0.0_r8
+         end where
+
          
          call outfld('CFODD_NTOTAL1_CS', cfodd_ntotal1_cs, pcols, lchnk)
          call outfld('CFODD_NTOTAL2_CS', cfodd_ntotal2_cs, pcols, lchnk)
@@ -3203,6 +3288,12 @@ slwc_ncot_int = SLWC_NCOT
          call outfld('CFODD_NTOTAL7_CS', cfodd_ntotal7_cs, pcols, lchnk)
          call outfld('CFODD_NTOTAL8_CS', cfodd_ntotal8_cs, pcols, lchnk)
          call outfld('CFODD_NTOTAL9_CS', cfodd_ntotal9_cs, pcols, lchnk)
+         call outfld('CFODD_NTOTAL10_CS', cfodd_ntotal10_cs, pcols, lchnk)
+         call outfld('CFODD_NTOTAL11_CS', cfodd_ntotal11_cs, pcols, lchnk)
+         call outfld('CFODD_NTOTAL12_CS', cfodd_ntotal12_cs, pcols, lchnk)
+         call outfld('CFODD_NTOTAL13_CS', cfodd_ntotal13_cs, pcols, lchnk)
+         call outfld('CFODD_NTOTAL14_CS', cfodd_ntotal14_cs, pcols, lchnk)
+         call outfld('CFODD_NTOTAL15_CS', cfodd_ntotal15_cs, pcols, lchnk)
          call outfld('npdfcld', npdfcld, pcols, lchnk)
          call outfld('npdfdrz', npdfdrz, pcols, lchnk)
          call outfld('npdfrain', npdfrain, pcols, lchnk)
