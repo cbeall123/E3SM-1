@@ -1266,7 +1266,8 @@ slwc_ncot_int = SLWC_NCOT
         call addfld('lbigreff', horiz_only, 'A', '1', '# of Liquid Clouds with Reff above upper threshold', flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld('nmultilcld', horiz_only, 'A', '1', '# of Subcolumns with Multilayer Clouds excluded from SLWC analysis - MODIS/CloudSat', flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld('nfracmulti', horiz_only, 'A', '1', '# of Subcolumns with Multilayer Clouds-fracout ', flag_xyfill=.true., fill_value=R_UNDEF)
-        call addfld('nmultilcld_cal', horiz_only, 'A', '1', '# of Subcolumns with Multilayer Clouds excluded from SLWC analysis - CALIPSO/CloudSat', flag_xyfill=.true., fill_value=R_UNDEF)
+        call addfld('nmultilcld_cal', horiz_only, 'A', '1', '# of Subcolumns with Multilayer Clouds excluded from SLWC analysis - CALIPSO', flag_xyfill=.true., fill_value=R_UNDEF)
+        call addfld('nmultilcld_mcal', horiz_only, 'A', '1', '# of Subcolumns with Multilayer Clouds excluded from SLWC analysis - MODIS/CALIPSO', flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld('nhetcld', horiz_only, 'A', '1', '# of Subcolumns with Heterogeneous Clouds excluded from SLWC analysis -MODIS/CloudSat', flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld('nhetcld_cal', horiz_only, 'A', '1', '# of Subcolumns with Heterogeneous Clouds excluded from SLWC analysis - CALIPSO/CloudSat', flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld('coldct', horiz_only, 'A', '1', '# of Subcolumns with Cloud Top Temp < 273 K excluded from SLWC analysis', flag_xyfill=.true., fill_value=R_UNDEF)
@@ -1292,6 +1293,7 @@ slwc_ncot_int = SLWC_NCOT
         call add_default('lbigreff',cosp_histfile_num,' ')
         call add_default('nmultilcld',cosp_histfile_num, ' ')
         call add_default('nmultilcld_cal',cosp_histfile_num, ' ')
+        call add_default('nmultilcld_mcal',cosp_histfile_num, ' ')
         call add_default('nfracmulti',cosp_histfile_num, ' ')
         call add_default('nhetcld',cosp_histfile_num,' ')
         call add_default('nhetcld_cal',cosp_histfile_num,' ')
@@ -1352,6 +1354,9 @@ slwc_ncot_int = SLWC_NCOT
     call addfld ('MODISANDCLOUDSAT_CF',horiz_only, 'A', '%', '"MODIS and CloudSat" composite total cloud fraction', flag_xyfill=.true.,&
             fill_value=R_UNDEF)
     call add_default('MODISANDCLOUDSAT_CF',cosp_histfile_num,' ')
+    call addfld ('MODISANDCLOUDSAT_ICECF',horiz_only, 'A', '%', '"MODIS and CloudSat" composite ice cloud fraction', flag_xyfill=.true.,&
+            fill_value=R_UNDEF)
+    call add_default('MODISANDCLOUDSAT_ICECF',cosp_histfile_num,' ')
 
 
     
@@ -1895,6 +1900,7 @@ slwc_ncot_int = SLWC_NCOT
     real(r8) :: nfracmulti(pcols)
     real(r8) :: nhetcld(pcols)
     real(r8) :: nmultilcld_cal(pcols)
+    real(r8) :: nmultilcld_mcal(pcols)
     real(r8) :: nhetcld_cal(pcols)
     real(r8) :: coldct(pcols)
     real(r8) :: coldct_cal(pcols)
@@ -1907,6 +1913,7 @@ slwc_ncot_int = SLWC_NCOT
     real(r8) :: modisandcalipso_cf(pcols)
     real(r8) :: modisandcalipso_icecf(pcols)
     real(r8) :: modisandcloudsat_cf(pcols)
+    real(r8) :: modisandcloudsat_icecf(pcols)
     
     real(r8),dimension(pcols,nhtml_cosp*nscol_cosp) :: &
          tau067_out,emis11_out,fracliq_out,cal_betatot,cal_betatot_ice, &
@@ -2060,6 +2067,7 @@ slwc_ncot_int = SLWC_NCOT
     nfracmulti(1:pcols)                              = R_UNDEF
     nhetcld(1:pcols)                                 = R_UNDEF
     nmultilcld_cal(1:pcols)                          = R_UNDEF
+    nmultilcld_mcal(1:pcols)                         = R_UNDEF
     nhetcld_cal(1:pcols)                             = R_UNDEF
     coldct(1:pcols)                                  = R_UNDEF
     coldct_cal(1:pcols)                              = R_UNDEF
@@ -2133,7 +2141,8 @@ slwc_ncot_int = SLWC_NCOT
     modis_calipso_cf(1:pcols)                        = R_UNDEF !CMB
     modisandcalipso_cf(1:pcols)                        = R_UNDEF !CMB
     modisandcalipso_icecf(1:pcols)                     = R_UNDEF !CMB
-    modisandcloudsat_cf(1:pcols)                        = R_UNDEF !CMB
+    modisandcloudsat_cf(1:pcols)                       = R_UNDEF !CMB
+    modisandcloudsat_icecf(1:pcols)                    = R_UNDEF !CMB
     ! ######################################################################################
     ! DECIDE WHICH COLUMNS YOU ARE GOING TO RUN COSP ON....
     ! ######################################################################################
@@ -2858,6 +2867,7 @@ slwc_ncot_int = SLWC_NCOT
 
     if ((lradar_sim) .and. (lmodis_sim)) then
         modisandcloudsat_cf(1:ncol) = cospOUT%modisandcloudsat_cf(:)
+        modisandcloudsat_icecf(1:ncol) = cospOUT%modisandcloudsat_icecf(:)
     endif
     
     if ((lradar_sim) .and. (lmodis_sim) .and. (llidar_sim)) then
@@ -2894,6 +2904,7 @@ slwc_ncot_int = SLWC_NCOT
         nmultilcld(1:ncol) = cospOUT%nmultilcld(:,1)
         nhetcld(1:ncol) = cospOUT%nhetcld(:,1)
         nmultilcld_cal(1:ncol) = cospOUT%nmultilcld(:,2)
+        nmultilcld_mcal(1:ncol) = cospOUT%nmultilcld(:,3)
         nfracmulti(1:ncol) = cospOUT%nfracmulti(:)
         nhetcld_cal(1:ncol) = cospOUT%nhetcld(:,2)
         coldct(1:ncol) = cospOUT%coldct(:)
@@ -3311,6 +3322,7 @@ slwc_ncot_int = SLWC_NCOT
          call outfld('lbigreff', lbigreff, pcols, lchnk)
          call outfld('nmultilcld', nmultilcld, pcols, lchnk)
          call outfld('nmultilcld_cal', nmultilcld_cal, pcols, lchnk)
+         call outfld('nmultilcld_mcal', nmultilcld_mcal, pcols, lchnk)
          call outfld('nfracmulti', nfracmulti, pcols, lchnk)
          call outfld('nhetcld_cal', nhetcld_cal, pcols, lchnk)
          call outfld('nhetcld', nhetcld, pcols, lchnk)
@@ -3506,6 +3518,7 @@ slwc_ncot_int = SLWC_NCOT
     ! CMB Cloudsat AND MODIS composite cloud fraction
     if ( (lmodis_sim) .and. (lradar_sim) ) then
         call outfld('MODISANDCLOUDSAT_CF', modisandcloudsat_cf, pcols, lchnk)
+        call outfld('MODISANDCLOUDSAT_ICECF', modisandcloudsat_icecf, pcols, lchnk)
     endif
 
     call t_stopf("writing_output")
@@ -4178,7 +4191,7 @@ allocate(x%lsmallcot(Npoints))
 allocate(x%mice(Npoints))
 allocate(x%lsmallreff(Npoints))
 allocate(x%lbigreff(Npoints))
-allocate(x%nmultilcld(Npoints,2))
+allocate(x%nmultilcld(Npoints,3))
 allocate(x%nfracmulti(Npoints))
 allocate(x%nhetcld(Npoints,2))
 allocate(x%coldct(Npoints))
@@ -4187,6 +4200,7 @@ allocate(x%calice(Npoints))
 allocate(x%obs_ntotal(Npoints,NOBSTYPE))
 allocate(x%slwccot(Npoints,SLWC_NCOT,COT_NCLASS))
 allocate(x%modisandcloudsat_cf(Npoints))
+allocate(x%modisandcloudsat_icecf(Npoints))
     !endif
     if((lmodis_sim) .and. (llidar_sim)) then
         allocate(x%modis_calipso_cf(Npoints))
@@ -4509,6 +4523,10 @@ allocate(x%modisandcloudsat_cf(Npoints))
      if (associated(y%modisandcloudsat_cf))                   then
         deallocate(y%modisandcloudsat_cf)
         nullify(y%modisandcloudsat_cf)
+     endif
+     if (associated(y%modisandcloudsat_icecf))                   then
+        deallocate(y%modisandcloudsat_icecf)
+        nullify(y%modisandcloudsat_icecf)
      endif
      if (associated(y%calipso_cldtype)) then
         deallocate(y%calipso_cldtype)

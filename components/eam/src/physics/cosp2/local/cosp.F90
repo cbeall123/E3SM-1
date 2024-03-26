@@ -306,7 +306,7 @@ MODULE MOD_COSP
           cfodd_ntotal => null()       ! # of CFODD (Npoints,CFODD_NDBZE,CFODD_NICOD,CFODD_NCLASS)
      real(wp),dimension(:,:),    pointer :: &
           wr_occfreq_ntotal => null(), &! # of nonprecip/drizzle/precip (Npoints,WR_NREGIME)
-          nmultilcld => null(),        & ! # of multilayered cloud subcolumns excluded from SLWC analysis (Npoints,2) 1=MODIS/CloudSat detected, 2=CALIPSO/CloudSat
+          nmultilcld => null(),        & ! # of multilayered cloud subcolumns excluded from SLWC analysis (Npoints,3) 1=MODIS/CloudSat detected, 2=CALIPSO, 3=MODIS/CALIPSO
           nhetcld => null(),           & ! # of continuous heterogenous (e.g., stratocumulus+ cumulus) cloud subcolumns excluded from SLWC analysis (Npoints,2)
           obs_ntotal => null()          ! # of total obs/clear-sky/cloud-sky (Npoints,NOBSTYPE)
      real(wp),dimension(:,:,:),pointer :: &
@@ -320,7 +320,8 @@ MODULE MOD_COSP
           coldct_cal => null(),      & ! # of subcolumns with cold cloud top temperature detected by CALIPSO (not MODIS)
           calice => null(),          & ! # of subcolumns excluded where CALIPSO detected ice (Npoints)
           nfracmulti => null(),      & ! # of multilayer cloud subcolumns counted by fracout, only for MODIS/CloudSat currently
-          modisandcloudsat_cf => null() ! CloudSat "AND" MODIS composite cloud fraction
+          modisandcloudsat_cf => null(),& ! CloudSat "AND" MODIS composite cloud fraction
+          modisandcloudsat_icecf => null() ! CloudSat "AND" MODIS composite ice cloud fraction
      !Joint CALIPSO+MODIS simulator outputs
      real(wp),dimension(:),pointer :: &
           modis_calipso_cf => null(),    & 
@@ -398,14 +399,15 @@ CONTAINS
          modisMeanLogTauLiquid, modisMeanLogTauIce, modisMeanSizeLiquid,        &
          modisMeanSizeIce, modisMeanCloudTopPressure, modisMeanLiquidWaterPath, &
          radar_lidar_tcc, cloudsat_tcc, cloudsat_tcc2,modis_calipso_cf,         &
-         modisandcalipso_cf,modisandcalipso_icecf,modisandcloudsat_cf
+         modisandcalipso_cf,modisandcalipso_icecf,modisandcloudsat_cf,          &
+         modisandcloudsat_icecf
     REAL(WP), dimension(:,:),allocatable  :: &
          modisRetrievedCloudTopPressure,modisRetrievedTau,modisRetrievedSize,   &
          misr_boxtau,misr_boxztop,misr_dist_model_layertops,isccp_boxtau,       &
          isccp_boxttop,isccp_boxptop,calipso_beta_mol,lidar_only_freq_cloud,    &
          grLidar532_beta_mol,atlid_beta_mol,modisCloudMask,modis_calipso_cldflag,&
          modisiceCloudMask,modis_calipso_icecldflag,radarCloudMask,             &
-         modis_cloudsat_cldflag
+         modis_cloudsat_cldflag,modis_cloudsat_icecldflag
     REAL(WP), dimension(:,:,:),allocatable :: &
          modisJointHistogram,modisJointHistogramIce,modisJointHistogramLiq,     &
          calipso_beta_tot,calipso_betaperp_tot, cloudsatDBZe,parasolPix_refl,   &
@@ -428,7 +430,7 @@ CONTAINS
          lsmallreff(:),          & ! # of liquid clouds with Reff below lower threshold (Npoints)
          lbigreff(:),            & ! # of liquid clouds with Reff above upper threshold (Npoints)
          nhetcld(:,:),           & ! # of heterogenous clouds (stratocumulus above/below cumulus) in continuous layer, excluded from SLWC counts
-         nmultilcld(:,:),        & ! # of multilayer cloud subcolumns, excluded from SLWC counts, 1=MODIS/CloudSat detected, 2=CALIPSO/CloudSat detected
+         nmultilcld(:,:),        & ! # of multilayer cloud subcolumns, excluded from SLWC counts, 1=MODIS/CloudSat detected, 2=CALIPSO detected, 3=MODIS/CALIPSO detected
          nfracmulti(:),          & ! # of subcolumns with multilayer clouds according to fracout, currently MODIS/CloudSat only 
          coldct(:),              & ! # of subcolumns excluded from SLWC counts because of cloud top temp < 273 K
          coldct_cal(:),          & ! # of subcolumns excluded because cold cloud top temp, detected by CALIPSO
@@ -1680,7 +1682,7 @@ CONTAINS
        allocate( mice(cloudsatIN%Npoints) )
        allocate( lsmallreff(cloudsatIN%Npoints) )
        allocate( lbigreff(cloudsatIN%Npoints) )
-       allocate( nmultilcld(cloudsatIN%Npoints, 2) )
+       allocate( nmultilcld(cloudsatIN%Npoints, 3) )
        allocate( nfracmulti(cloudsatIN%Npoints) )
        allocate( nhetcld(cloudsatIN%Npoints, 2) )
        allocate( coldct(cloudsatIN%Npoints) )
@@ -1906,6 +1908,27 @@ CONTAINS
         endif
     endif
 
+        ! "CloudSat and MODIS" ice composite cloud fraction
+    if (Lmodis_subcolumn .and. Lcloudsat_subcolumn) then
+        allocate( modis_cloudsat_icecldflag(cloudsatIN%Npoints,cloudsatIN%Ncolumns) )
+        allocate( modisandcloudsat_icecf(cloudsatIN%Npoints) )
+        modis_cloudsat_icecldflag(:,:) = 0._wp
+        modisandcloudsat_icecf(:) = R_UNDEF
+
+        where( (cospOUT%modis_iceCloudMask .eq. 1._wp) .and. &
+               (radarCloudMask .eq. 1._wp) )
+               modis_cloudsat_icecldflag = 1._wp
+        endwhere
+
+        modisandcloudsat_icecf(:) = SUM(modis_cloudsat_icecldflag, DIM=2)
+        modisandcloudsat_icecf(:) = modisandcloudsat_icecf(:) / FLOAT(cloudsatIN%Ncolumns) * 100._wp
+
+        ! Assign to output structure
+        if ( associated(cospOUT%modisandcloudsat_icecf) ) then
+            cospOUT%modisandcloudsat_icecf(ij:ik) = modisandcloudsat_icecf
+        endif
+    endif
+
     !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     ! 7) Cleanup
     !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1984,10 +2007,12 @@ CONTAINS
     if (allocated(modisandcalipso_cf))    deallocate(modisandcalipso_cf)
     if (allocated(modisandcalipso_icecf))    deallocate(modisandcalipso_icecf)
     if (allocated(modisandcloudsat_cf))  deallocate(modisandcloudsat_cf)
+    if (allocated(modisandcloudsat_icecf))  deallocate(modisandcloudsat_icecf)
     if (allocated(modis_calipso_cldflag))  deallocate(modis_calipso_cldflag)
     if (allocated(modis_calipso_icecldflag))  deallocate(modis_calipso_icecldflag)
     if (allocated(radarCloudMask))        deallocate(radarCloudMask)
     if (allocated(modis_cloudsat_cldflag)) deallocate(modis_cloudsat_cldflag)
+    if (allocated(modis_cloudsat_icecldflag)) deallocate(modis_cloudsat_icecldflag)
 
   end function COSP_SIMULATOR
   ! ######################################################################################
