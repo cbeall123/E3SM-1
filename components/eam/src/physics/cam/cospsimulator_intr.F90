@@ -40,8 +40,14 @@ module cospsimulator_intr
        nsr_cosp          => SR_BINS,             &
        nhtmisr_cosp      => numMISRHgtBins,      &
        nhydro            => N_HYDRO, &
-       cloudsat_preclvl
-    use mod_cosp_stats,       only: cosp_change_vertical_grid
+       cloudsat_preclvl, &
+       nlwp_cosp_modis   => nLWP, & ! YQIN 04/04/23
+       LWP_binCenters, LWP_binEdges, &
+       numMODISLWPBins
+
+  use mod_cosp_stats,       only: cosp_change_vertical_grid
+  use cam_history_support, only: fillvalue
+
 #endif
   implicit none
   private
@@ -104,7 +110,10 @@ module cospsimulator_intr
   real(r8), target :: cfoddicod_binCenters_cosp(CFODD_NICOD)
   real(r8), target :: slwchistcot_binEdges_cosp(2,SLWC_NCOT)
   real(r8), target :: slwchistcot_binCenters_cosp(SLWC_NCOT)
-  
+
+  ! YQIN 04/04/23
+  real(r8), target :: lwpmid_cosp_modis(nlwp_cosp_modis)! LWP midpoints of COSP MODIS output
+  real(r8), target :: lwplim_cosp_modis(2,nlwp_cosp_modis)
   real(r8) :: htmlmid_cosp(nhtml_cosp)                     ! Model level height midpoints for output
   integer  :: prstau_cosp(nprs_cosp*ntau_cosp)             ! ISCCP mixed output dimension index
   integer  :: prstau_cosp_modis(nprs_cosp*ntau_cosp_modis) ! MODIS mixed output dimension index
@@ -322,6 +331,10 @@ CONTAINS
     cfoddicod_binEdges_cosp = CFODD_HISTICODedges
     slwchistcot_binCenters_cosp = SLWC_HISTCOTcenters
     slwchistcot_binEdges_cosp = SLWC_HISTCOTedges
+
+    ! YQIN 04/04/23
+    lwpmid_cosp_modis = LWP_binCenters
+    lwplim_cosp_modis = LWP_binEdges
                                   
     ! Initialize the distributional parameters for hydrometeors in radar simulator. In COSPv1.4, this was declared in
     ! cosp_defs.f.
@@ -685,6 +698,11 @@ slwc_ncot_int = SLWC_NCOT
        call add_hist_coord('cosp_reffliq',numMODISReffLiqBins,                 &
             'COSP Mean MODIS effective radius (liquid)', 'm', reffLIQ_binCenters_cosp, &
             bounds_name='cosp_reffliq_bnds',bounds=reffLIQ_binEdges_cosp)      
+
+       ! YQIN 04/04/23
+       call add_hist_coord('cosp_lwp_modis', nlwp_cosp_modis,                  &
+            'COSP Mean MODIS Liquid Water Path', 'kg/m2', lwpmid_cosp_modis,           &
+            bounds_name='cosp_lwp_modis_bnds', bounds=lwplim_cosp_modis)
     end if
     
     if ((lmodis_sim) .and. (lradar_sim) .and. (llidar_sim)) then
@@ -1079,6 +1097,7 @@ slwc_ncot_int = SLWC_NCOT
        ! float clrlmodis ( time, plev, tau, loc )
        call addfld ('CLRLMODIS',(/'cosp_tau_modis','cosp_reffliq  '/),'A','%','MODIS Cloud Area Fraction',            &
             flag_xyfill=.true., fill_value=R_UNDEF)
+
        ! YQIN 04/04/23
        ! float clmodis_liq ( time, plev, tau, loc )
        call addfld ('CLMODIS_LIQ',(/'cosp_tau_modis','cosp_prs      '/),'A','%','MODIS Cloud Area Fraction only Liquid',            &
@@ -1087,7 +1106,7 @@ slwc_ncot_int = SLWC_NCOT
        call addfld ('CLMODIS_ICE',(/'cosp_tau_modis','cosp_prs      '/),'A','%','MODIS Cloud Area Fraction only Ice',            &
             flag_xyfill=.true., fill_value=R_UNDEF)
        ! float clmodis_lwpre ( time, plev, tau, loc )
-       call addfld ('CLMODIS_LWPR',(/'cosp_lwp_modis','cosp_reffliq  '/),'A','%','MODIS Cloud Area Fraction (LWP-RE histogram)',            &
+       call addfld ('CLMODIS_LWPR',(/'cosp_lwp_modis','cosp_reffliq     '/),'A','%','MODIS Cloud Area Fraction (LWP-RE histogram)',            &
             flag_xyfill=.true., fill_value=R_UNDEF)
        
        !! add MODIS output to history file specified by the CAM namelist variable cosp_histfile_num
@@ -1113,6 +1132,12 @@ slwc_ncot_int = SLWC_NCOT
        call add_default ('CLMODIS',cosp_histfile_num,' ')
        call add_default ('CLRIMODIS',cosp_histfile_num,' ')
        call add_default ('CLRLMODIS',cosp_histfile_num,' ')
+
+       ! YQIN 04/04/23
+       call add_default ('CLMODIS_LIQ', cosp_histfile_num, ' ')
+       call add_default ('CLMODIS_ICE', cosp_histfile_num, ' ')
+       call add_default ('CLMODIS_LWPR', cosp_histfile_num, ' ')
+
     end if
     
     !Warm rain joint MODIS and CloudSat products
@@ -1644,8 +1669,9 @@ slwc_ncot_int = SLWC_NCOT
     integer, parameter :: nf_calipso=29                  ! number of calipso outputs
     integer, parameter :: nf_isccp=9                     ! number of isccp outputs
     integer, parameter :: nf_misr=1                      ! number of misr outputs
-    integer, parameter :: nf_modis=22                    ! number of modis outputs
-    
+!    integer, parameter :: nf_modis=20                    ! number of modis outputs
+    integer, parameter :: nf_modis=46                    ! number of modis outputs ! YQIN
+   
     ! Cloudsat outputs
     character(len=max_fieldname_len),dimension(nf_radar),parameter ::          &
          fname_radar = (/'CFAD_DBZE94_CS', 'CLD_CAL_NOTCS ', 'DBZE_CS       ', &
@@ -1679,21 +1705,21 @@ slwc_ncot_int = SLWC_NCOT
          fname_misr=(/'CLD_MISR '/)
     ! MODIS outputs
     character(len=max_fieldname_len),dimension(nf_modis) :: &
-         fname_modis=(/'CLTMODIS      ','CLWMODIS      ','CLIMODIS      ','CLHMODIS      ','CLMMODIS      ',&
-                       'CLTMODISIC    ','CLWMODISIC    ','CLIMODISIC    ',&
-                       'CLLMODIS      ','TAUTMODIS     ','TAUWMODIS     ','TAUIMODIS     ','TAUTLOGMODIS  ',&
-                       'TAUWLOGMODIS  ','TAUILOGMODIS  ','REFFCLWMODIS  ','REFFCLIMODIS  ',&
-                       'PCTMODIS      ', &
-                       'TCTMODIS      ','NDMODIS_Q06   ','CLNDMODIS_Q06 ','TCTMODISIC    ','NDMODISIC_Q06 ',& ! YQIN
-                       'LWPMODIS_Q06  ','LWPMODISI_Q06 ', & ! YQIN 
-                       'TAUMODIS_Q06  ','REMODIS_Q06   ', & ! YQIN
-                       'NDMODIS_ALL   ','CLNDMODIS_ALL ','NDMODISIC_ALL ',& ! YQIN
-                       'LWPMODIS_ALL  ','LWPMODISI_ALL ', & ! YQIN 
-                       'TAUMODIS_ALL  ','REMODIS_ALL   ', & ! YQIN
-                       'CLNDMODISI_Q06','CLNDMODISI_ALL', & ! YQIN 
-                       'LWPMODIS      ','IWPMODIS      ','CLMODIS       ','CLRIMODIS     ',&
-                       'CLRLMODIS     ','REFFMODISL    ','REFFMODISI    ', &
-                       'CLMODIS_LIQ   ','CLMODIS_ICE   ','CLMODIS_LWPR  ' & ! YQIN 04/04/23
+         fname_modis=(/'CLTMODIS    ','CLWMODIS    ','CLIMODIS    ','CLHMODIS    ','CLMMODIS    ',&
+                       'CLTMODISIC  ','CLWMODISIC  ','CLIMODISIC  ',&
+                       'CLLMODIS    ','TAUTMODIS   ','TAUWMODIS   ','TAUIMODIS   ','TAUTLOGMODIS',&
+                       'TAUWLOGMODIS','TAUILOGMODIS','REFFCLWMODIS','REFFCLIMODIS',&
+                       'PCTMODIS    ', &
+                       'TCTMODIS    ','NDMODIS_Q06 ','CLNDMODIS_Q06','TCTMODISIC  ','NDMODISIC_Q06',& ! YQIN
+                       'LWPMODIS_Q06','LWPMODISI_Q06', & ! YQIN 
+                       'TAUMODIS_Q06','REMODIS_Q06 ', & ! YQIN
+                       'NDMODIS_ALL ','CLNDMODIS_ALL','NDMODISIC_ALL',& ! YQIN
+                       'LWPMODIS_ALL','LWPMODISI_ALL', & ! YQIN 
+                       'TAUMODIS_ALL','REMODIS_ALL ', & ! YQIN
+                       'CLNDMODISI_Q06', 'CLNDMODISI_ALL', & ! YQIN 
+                       'LWPMODIS    ','IWPMODIS    ','CLMODIS     ','CLRIMODIS   ',&
+                       'CLRLMODIS   ','REFFMODISL  ','REFFMODISI  ', &
+                       'CLMODIS_LIQ ','CLMODIS_ICE ','CLMODIS_LWPR' & ! YQIN 04/04/23
                        /)
 
     logical :: run_radar(nf_radar,pcols)                 ! logical telling you if you should run radar simulator
@@ -1862,6 +1888,15 @@ slwc_ncot_int = SLWC_NCOT
     real(r8) :: clrimodis(pcols,ntau_cosp,numMODISReffIceBins)
     real(r8) :: clrlmodis_cam(pcols,ntau_cosp*numMODISReffLiqBins)
     real(r8) :: clrlmodis(pcols,ntau_cosp,numMODISReffLiqBins)
+
+    ! YQIN 04/04/23
+    real(r8) :: clmodis_liq_cam(pcols,ntau_cosp_modis*nprs_cosp)
+    real(r8) :: clmodis_liq(pcols,ntau_cosp_modis,nprs_cosp)
+    real(r8) :: clmodis_ice_cam(pcols,ntau_cosp_modis*nprs_cosp)
+    real(r8) :: clmodis_ice(pcols,ntau_cosp_modis,nprs_cosp)
+    real(r8) :: clmodis_lwpre_cam(pcols,nlwp_cosp_modis*numMODISReffLiqBins)
+    real(r8) :: clmodis_lwpre(pcols,nlwp_cosp_modis,numMODISReffLiqBins)
+
     !real(r8) :: tau067_out(pcols,nhtml_cosp*nscol_cosp),emis11_out(pcols,nhtml_cosp*nscol_cosp)
     real(r8) :: cfodd_ntotal1(pcols,CFODD_NDBZE,CFODD_NICOD)
     real(r8) :: cfodd_ntotal2(pcols,CFODD_NDBZE,CFODD_NICOD)
@@ -2172,6 +2207,15 @@ slwc_ncot_int = SLWC_NCOT
     modisandcalipso_icecf(1:pcols)                     = R_UNDEF !CMB
     modisandcloudsat_cf(1:pcols)                       = R_UNDEF !CMB
     modisandcloudsat_icecf(1:pcols)                    = R_UNDEF !CMB
+
+    ! YQIN 04/04/23
+    clmodis_liq_cam(1:pcols,1:ntau_cosp_modis*nprs_cosp) = R_UNDEF
+    clmodis_liq(1:pcols,1:ntau_cosp_modis,1:nprs_cosp)   = R_UNDEF
+    clmodis_ice_cam(1:pcols,1:ntau_cosp_modis*nprs_cosp) = R_UNDEF
+    clmodis_ice(1:pcols,1:ntau_cosp_modis,1:nprs_cosp)   = R_UNDEF
+    clmodis_lwpre_cam(1:pcols,1:nlwp_cosp_modis*numMODISReffLiqBins) = R_UNDEF
+    clmodis_lwpre(1:pcols,1:nlwp_cosp_modis,1:numMODISReffLiqBins)   = R_UNDEF
+
     ! ######################################################################################
     ! DECIDE WHICH COLUMNS YOU ARE GOING TO RUN COSP ON....
     ! ######################################################################################
@@ -2749,6 +2793,31 @@ slwc_ncot_int = SLWC_NCOT
                 end where
              enddo
           enddo
+
+
+          ! YQIN 04/04/23
+          do i=1,ntau_cosp_modis
+             ! YQIN 04/04/23
+             do k=1,nprs_cosp
+                where(cam_sunlit(1:ncol) .eq. 0)
+                   cospOUT%modis_Optical_Thickness_vs_Cloud_Top_Pressure_Liq(1:ncol,i,k) = R_UNDEF 
+                end where
+             enddo
+             do k=1,nprs_cosp
+                where(cam_sunlit(1:ncol) .eq. 0)
+                   cospOUT%modis_Optical_Thickness_vs_Cloud_Top_Pressure_Ice(1:ncol,i,k) = R_UNDEF 
+                end where
+             enddo
+          enddo
+
+          do i=1,nlwp_cosp_modis
+            do k=1,numMODISReffLiqBins
+                where(cam_sunlit(1:ncol) .eq. 0)
+                    cospOUT%modis_LWP_vs_ReffLIQ(1:ncol,i,k) = R_UNDEF
+                end where
+            enddo
+          enddo
+
        end if
     end if
     call t_stopf("sunlit_passive")
@@ -2885,7 +2954,12 @@ slwc_ncot_int = SLWC_NCOT
        iwpmodis(1:ncol)     = cospOUT%modis_Ice_Water_Path_Mean
        clmodis(1:ncol,1:ntau_cosp_modis,1:nprs_cosp)  = cospOUT%modis_Optical_Thickness_vs_Cloud_Top_Pressure 
        clrimodis(1:ncol,1:ntau_cosp_modis,1:numMODISReffIceBins) = cospOUT%modis_Optical_Thickness_vs_ReffICE
-       clrlmodis(1:ncol,1:ntau_cosp_modis,1:numMODISReffLiqBins) = cospOUT%modis_Optical_Thickness_vs_ReffLIQ           
+       clrlmodis(1:ncol,1:ntau_cosp_modis,1:numMODISReffLiqBins) = cospOUT%modis_Optical_Thickness_vs_ReffLIQ
+
+       ! YQIN 04/04/23
+       clmodis_liq(1:ncol,1:ntau_cosp_modis,1:nprs_cosp)  = cospOUT%modis_Optical_Thickness_vs_Cloud_Top_Pressure_Liq
+       clmodis_ice(1:ncol,1:ntau_cosp_modis,1:nprs_cosp)  = cospOUT%modis_Optical_Thickness_vs_Cloud_Top_Pressure_Ice
+       clmodis_lwpre(1:ncol,1:nlwp_cosp_modis,1:numMODISReffLiqBins) = cospOUT%modis_LWP_vs_ReffLIQ
     endif
  
     if ((lmodis_sim) .and. (llidar_sim)) then
@@ -3061,6 +3135,31 @@ slwc_ncot_int = SLWC_NCOT
                 clrlmodis_cam(i,ipt) = clrlmodis(i,it,ip)
              end do
           end do
+
+
+          ! YQIN 04/04/23
+          ! CAM clmodis_liq
+          do ip=1,nprs_cosp
+             do it=1,ntau_cosp_modis
+                ipt=(ip-1)*ntau_cosp_modis+it
+                clmodis_liq_cam(i,ipt) = clmodis_liq(i,it,ip)
+             end do
+          end do
+          ! CAM clmodis_ice
+          do ip=1,nprs_cosp
+             do it=1,ntau_cosp_modis
+                ipt=(ip-1)*ntau_cosp_modis+it
+                clmodis_ice_cam(i,ipt) = clmodis_ice(i,it,ip)
+             end do
+          end do
+          ! CAM clmodis_lwpre
+          do ip=1,numMODISReffLiqBins
+             do it=1,nlwp_cosp_modis
+                ipt=(ip-1)*nlwp_cosp_modis+it
+                clmodis_lwpre_cam(i,ipt) = clmodis_lwpre(i,it,ip)
+             end do
+          end do
+
        endif
        
        ! Subcolums 
@@ -3520,6 +3619,13 @@ slwc_ncot_int = SLWC_NCOT
        call outfld('CLMODIS',clmodis_cam  ,pcols,lchnk) 
        call outfld('CLRIMODIS',clrimodis_cam  ,pcols,lchnk) 
        call outfld('CLRLMODIS',clrlmodis_cam  ,pcols,lchnk) 
+
+
+       ! YQIN 04/04/23
+       call outfld('CLMODIS_LIQ',clmodis_liq_cam  ,pcols,lchnk) 
+       call outfld('CLMODIS_ICE',clmodis_ice_cam  ,pcols,lchnk) 
+       call outfld('CLMODIS_LWPR',clmodis_lwpre_cam  ,pcols,lchnk) 
+
     end if
     
     ! SUB-COLUMN OUTPUT
@@ -4172,6 +4278,12 @@ slwc_ncot_int = SLWC_NCOT
        allocate(x%modis_Optical_Thickness_vs_ReffICE(nPoints,numMODISTauBins,numMODISReffIceBins))
        allocate(x%modis_CloudMask(Npoints,Ncolumns))
        allocate(x%modis_iceCloudMask(Npoints,Ncolumns))
+
+       ! YQIN 04/04/23
+       allocate(x%modis_Optical_Thickness_vs_Cloud_Top_Pressure_Liq(nPoints,numModisTauBins,numMODISPresBins))
+       allocate(x%modis_Optical_Thickness_vs_Cloud_Top_Pressure_Ice(nPoints,numModisTauBins,numMODISPresBins))
+       allocate(x%modis_LWP_vs_ReffLIQ(nPoints,numMODISLWPBins,numMODISReffLiqBins))
+
     endif
     
     ! CALIPSO simulator
@@ -4541,6 +4653,22 @@ allocate(x%modisandcloudsat_icecf(Npoints))
         deallocate(y%modis_Optical_thickness_vs_ReffICE)
         nullify(y%modis_Optical_thickness_vs_ReffICE)
      endif
+
+
+     ! YQIN 04/04/23
+     if (associated(y%modis_Optical_Thickness_vs_Cloud_Top_Pressure_Liq))        then
+        deallocate(y%modis_Optical_Thickness_vs_Cloud_Top_Pressure_Liq)     
+        nullify(y%modis_Optical_Thickness_vs_Cloud_Top_Pressure_Liq)     
+     endif
+     if (associated(y%modis_Optical_Thickness_vs_Cloud_Top_Pressure_Ice))        then
+        deallocate(y%modis_Optical_Thickness_vs_Cloud_Top_Pressure_Ice)     
+        nullify(y%modis_Optical_Thickness_vs_Cloud_Top_Pressure_Ice)     
+     endif
+     if (associated(y%modis_LWP_vs_ReffLIQ))                   then
+        deallocate(y%modis_LWP_vs_ReffLIQ)
+        nullify(y%modis_LWP_vs_ReffLIQ)
+     endif
+
      if (associated(y%modis_calipso_cf))                   then
         deallocate(y%modis_calipso_cf)
         nullify(y%modis_calipso_cf)
