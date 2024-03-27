@@ -391,7 +391,7 @@ CONTAINS
          lrttov_cleanUp   = .false.
         
     integer, dimension(:,:),allocatable  :: &
-         modisRetrievedPhase,isccpLEVMATCH
+         modisRetrievedPhase,isccpLEVMATCH, modisMultilCld
     real(wp), dimension(:),  allocatable  :: &
          modisCfTotal,modisCfLiquid,modisMeanIceWaterPath, isccp_meantbclr,     &
          modisCfIce, modisCfHigh, modisCfMid, modisCfLow,modisMeanTauTotal,     &
@@ -948,6 +948,7 @@ CONTAINS
           allocate(modisRetrievedTau(modisIN%nSunlit,modisIN%nColumns),                  &
                    modisRetrievedSize(modisIN%nSunlit,modisIN%nColumns),                 &
                    modisRetrievedPhase(modisIN%nSunlit,modisIN%nColumns),                &
+                   modisMultilCld(modisIN%nSunlit,modisIN%nColumns),                     &
                    modisRetrievedCloudTopPressure(modisIN%nSunlit,modisIN%nColumns))
           ! Call simulator
           do i = 1, modisIN%nSunlit
@@ -958,6 +959,7 @@ CONTAINS
                                   modisIN%w0(int(modisIN%sunlit(i)),:,:),                &
                                   isccp_boxptop(int(modisIN%sunlit(i)),:),               &
                                   modisRetrievedPhase(i,:),                              &
+                                  modisMultilCld(i,:),                                   &
                                   modisRetrievedCloudTopPressure(i,:),                   &
                                   modisRetrievedTau(i,:),modisRetrievedSize(i,:))
           end do
