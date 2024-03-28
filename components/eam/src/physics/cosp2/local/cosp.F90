@@ -306,7 +306,7 @@ MODULE MOD_COSP
           cfodd_ntotal => null()       ! # of CFODD (Npoints,CFODD_NDBZE,CFODD_NICOD,CFODD_NCLASS)
      real(wp),dimension(:,:),    pointer :: &
           wr_occfreq_ntotal => null(), &! # of nonprecip/drizzle/precip (Npoints,WR_NREGIME)
-          nmultilcld => null(),        & ! # of multilayered cloud subcolumns excluded from SLWC analysis (Npoints,3) 1=MODIS/CloudSat detected, 2=CALIPSO, 3=MODIS/CALIPSO
+          nmultilcld => null(),        & ! # of multilayered cloud subcolumns excluded from SLWC analysis (Npoints,4) 1=MODIS/CloudSat detected, 2=CALIPSO, 3=MODIS/CALIPSO, 4=MODIS
           nhetcld => null(),           & ! # of continuous heterogenous (e.g., stratocumulus+ cumulus) cloud subcolumns excluded from SLWC analysis (Npoints,2)
           obs_ntotal => null()          ! # of total obs/clear-sky/cloud-sky (Npoints,NOBSTYPE)
      real(wp),dimension(:,:,:),pointer :: &
@@ -1684,7 +1684,7 @@ CONTAINS
        allocate( mice(cloudsatIN%Npoints) )
        allocate( lsmallreff(cloudsatIN%Npoints) )
        allocate( lbigreff(cloudsatIN%Npoints) )
-       allocate( nmultilcld(cloudsatIN%Npoints, 3) )
+       allocate( nmultilcld(cloudsatIN%Npoints, 4) )
        allocate( nfracmulti(cloudsatIN%Npoints) )
        allocate( nhetcld(cloudsatIN%Npoints, 2) )
        allocate( coldct(cloudsatIN%Npoints) )
@@ -1756,6 +1756,7 @@ CONTAINS
                cospOUT%modis_Optical_Thickness_Ice_Mean,                      & !! in
                cospOUT%modis_Cloud_Particle_Size_Ice_Mean,                    & !! in
                cospOUT%modis_Cloud_Fraction_Ice_Mean,                         & !! in
+               modisMultilCld,                                                & !! in 
                frac_outI,                                                     & !! in
                Ze_totI,                                                       & !! in
                tautot_liqI, tautot_iceI, cospOUT%calipso_lidarcldflag,       & !! in
@@ -1778,6 +1779,7 @@ CONTAINS
                cospOUT%modis_Optical_Thickness_Ice_Mean,                      & !! in
                cospOUT%modis_Cloud_Particle_Size_Ice_Mean,                    & !! in
                cospOUT%modis_Cloud_Fraction_Ice_Mean,                         & !! in
+               modisMultilCld,                                                & !! in 
                cospIN%frac_out,                                               & !! in
                cloudsatDBZe,                                                  & !! in
                calipsoIN%tautot_liq, calipsoIN%tautot_ice,                    & !! in
@@ -1980,6 +1982,7 @@ CONTAINS
        if (allocated(modisIN%pres))      deallocate(modisIN%pres)
     endif
 
+    if (allocated(modisMultilCld))        deallocate(modisMultilCld)
     if (allocated(calipso_beta_tot))      deallocate(calipso_beta_tot)
     if (allocated(grLidar532_beta_tot))  deallocate(grLidar532_beta_tot)
     if (allocated(atlid_beta_tot))        deallocate(atlid_beta_tot) 
