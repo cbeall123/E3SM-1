@@ -1256,6 +1256,7 @@ slwc_ncot_int = SLWC_NCOT
         call addfld ('npdfdrz_multi', horiz_only, 'A', '1', '# of Drizzling Clouds multil - fracout"', flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld ('npdfrain_multi', horiz_only, 'A', '1', '# of Raining Clouds multil - fracout"', flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld ('npdfslwc_calonly', horiz_only, 'A', '1', '# of SLWCs CALIPSO only"', flag_xyfill=.true., fill_value=R_UNDEF)
+        call addfld ('npdfslwc_modonly', horiz_only, 'A', '1', '# of SLWCs MODIS only"', flag_xyfill=.true., fill_value=R_UNDEF)
         call addfld ('npdfslwc_mcal', horiz_only, 'A', '1', '# of SLWCs MODIS and CALIPSO composite only"', flag_xyfill=.true., fill_value=R_UNDEF)
         
         !CB Adding counts of other cloud types not included in diagnostics
@@ -1288,6 +1289,7 @@ slwc_ncot_int = SLWC_NCOT
         call add_default('npdfrain_multi',cosp_histfile_num,' ')
         call add_default('npdfslwc_mcal',cosp_histfile_num,' ')
         call add_default('npdfslwc_calonly',cosp_histfile_num,' ')
+        call add_default('npdfslwc_modonly',cosp_histfile_num,' ')
         call add_default('lsmallcot',cosp_histfile_num,' ')
         call add_default('mice',cosp_histfile_num,' ')
         call add_default('lsmallreff',cosp_histfile_num,' ')
@@ -1894,6 +1896,7 @@ slwc_ncot_int = SLWC_NCOT
     real(r8) :: npdfrain_multi(pcols)
     real(r8) :: npdfslwc_mcal(pcols)
     real(r8) :: npdfslwc_calonly(pcols)
+    real(r8) :: npdfslwc_modonly(pcols)
     real(r8) :: lsmallcot(pcols)
     real(r8) :: mice(pcols)
     real(r8) :: lsmallreff(pcols)
@@ -2062,6 +2065,7 @@ slwc_ncot_int = SLWC_NCOT
     npdfrain_multi(1:pcols)                          = R_UNDEF
     npdfslwc_mcal(1:pcols)                           = R_UNDEF
     npdfslwc_calonly(1:pcols)                        = R_UNDEF
+    npdfslwc_modonly(1:pcols)                        = R_UNDEF
     lsmallcot(1:pcols)                               = R_UNDEF
     mice(1:pcols)                                    = R_UNDEF
     lsmallreff(1:pcols)                              = R_UNDEF
@@ -2901,6 +2905,7 @@ slwc_ncot_int = SLWC_NCOT
         npdfrain_multi(1:ncol) = cospOUT%wr_occfreq_ntotal(:,9)
         npdfslwc_mcal(1:ncol) = cospOUT%wr_occfreq_ntotal(:,10)
         npdfslwc_calonly(1:ncol) = cospOUT%wr_occfreq_ntotal(:,11)
+        npdfslwc_modonly(1:ncol) = cospOUT%wr_occfreq_ntotal(:,12)
         lsmallcot(1:ncol) = cospOUT%lsmallcot(:)
         mice(1:ncol) = cospOUT%mice(:)
         lsmallreff(1:ncol) = cospOUT%lsmallreff(:)
@@ -3321,6 +3326,7 @@ slwc_ncot_int = SLWC_NCOT
          call outfld('npdfrain_multi', npdfrain_multi, pcols, lchnk)
          call outfld('npdfslwc_mcal', npdfslwc_mcal, pcols, lchnk)
          call outfld('npdfslwc_calonly', npdfslwc_calonly, pcols, lchnk)
+         call outfld('npdfslwc_modonly', npdfslwc_modonly, pcols, lchnk)
          call outfld('lsmallcot',lsmallcot, pcols, lchnk)
          call outfld('mice', mice, pcols, lchnk)
          call outfld('lsmallreff', lsmallreff, pcols, lchnk)

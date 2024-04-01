@@ -407,7 +407,7 @@ CONTAINS
          isccp_boxttop,isccp_boxptop,calipso_beta_mol,lidar_only_freq_cloud,    &
          grLidar532_beta_mol,atlid_beta_mol,modisCloudMask,modis_calipso_cldflag,&
          modisiceCloudMask,modis_calipso_icecldflag,radarCloudMask,             &
-         modis_cloudsat_cldflag,modis_cloudsat_icecldflag
+         modis_cloudsat_cldflag,modis_cloudsat_icecldflag,modis_ctt
     REAL(WP), dimension(:,:,:),allocatable :: &
          modisJointHistogram,modisJointHistogramIce,modisJointHistogramLiq,     &
          calipso_beta_tot,calipso_betaperp_tot, cloudsatDBZe,parasolPix_refl,   &
@@ -758,6 +758,7 @@ CONTAINS
        modisIN%Npoints   => Npoints
        modisIN%liqFrac   => cospIN%fracLiq
        modisIN%tau       => cospIN%tau_067
+       modisIN%at        => cospgridIN%at
        modisIN%g         => cospIN%asym
        modisIN%w0        => cospIN%ss_alb
        modisIN%Nsunlit   = count(cospgridIN%sunlit > 0)
@@ -949,19 +950,25 @@ CONTAINS
                    modisRetrievedSize(modisIN%nSunlit,modisIN%nColumns),                 &
                    modisRetrievedPhase(modisIN%nSunlit,modisIN%nColumns),                &
                    modisMultilCld(modisIN%nSunlit,modisIN%nColumns),                     &
-                   modisRetrievedCloudTopPressure(modisIN%nSunlit,modisIN%nColumns))
+                   modisRetrievedCloudTopPressure(modisIN%nSunlit,modisIN%nColumns),     &
+                   modis_ctt(modisIN%nSunlit,modisIN%nColumns) )
           ! Call simulator
           do i = 1, modisIN%nSunlit
+             print*,"modis temp at Nlevel: ", modisIN%at(int(modisIN%sunlit(i)),modisIN%Nlevels)
+             print*, "modis temp at Nlevel-5: ", modisIN%at(int(modisIN%sunlit(i)),modisIN%Nlevels-INT(5)) 
+             print*, "modis temp at Nlevel-10: ", modisIN%at(int(modisIN%sunlit(i)),modisIN%Nlevels-INT(10))
              call modis_subcolumn(modisIN%Ncolumns,modisIN%Nlevels,modisIN%pres(i,:),    &
                                   modisIN%tau(int(modisIN%sunlit(i)),:,:),               &
                                   modisIN%liqFrac(int(modisIN%sunlit(i)),:,:),           &
                                   modisIN%g(int(modisIN%sunlit(i)),:,:),                 &
                                   modisIN%w0(int(modisIN%sunlit(i)),:,:),                &
+                                  modisIN%at(int(modisIN%sunlit(i)),:),                  &
                                   isccp_boxptop(int(modisIN%sunlit(i)),:),               &
                                   modisRetrievedPhase(i,:),                              &
                                   modisMultilCld(i,:),                                   &
                                   modisRetrievedCloudTopPressure(i,:),                   &
-                                  modisRetrievedTau(i,:),modisRetrievedSize(i,:))
+                                  modisRetrievedTau(i,:),modisRetrievedSize(i,:),        &
+                                  modis_ctt(i,:))
           end do
        endif
     endif
@@ -1756,6 +1763,7 @@ CONTAINS
                cospOUT%modis_Optical_Thickness_Ice_Mean,                      & !! in
                cospOUT%modis_Cloud_Particle_Size_Ice_Mean,                    & !! in
                cospOUT%modis_Cloud_Fraction_Ice_Mean,                         & !! in
+               modis_ctt,                                                     & !! in 
                modisMultilCld,                                                & !! in 
                frac_outI,                                                     & !! in
                Ze_totI,                                                       & !! in
@@ -1764,7 +1772,7 @@ CONTAINS
                lsmallcot, mice, lsmallreff, lbigreff,                         & !! inout
                nmultilcld, nfracmulti, nhetcld, coldct, coldct_cal, calice,   & !! inout
                obs_ntotal, slwccot       )                                     !! inout
-          deallocate( zlev, t_in, tempI, frac_outI, Ze_totI )
+          deallocate( zlev, t_in, tempI, frac_outI, Ze_totI, modis_ctt )
        else  ! do not use vgrid interporation ---------------------------------------!
           !! original model grid
           call cosp_diag_warmrain(                                            &
@@ -1779,6 +1787,7 @@ CONTAINS
                cospOUT%modis_Optical_Thickness_Ice_Mean,                      & !! in
                cospOUT%modis_Cloud_Particle_Size_Ice_Mean,                    & !! in
                cospOUT%modis_Cloud_Fraction_Ice_Mean,                         & !! in
+               modis_ctt,                                                     & !! in 
                modisMultilCld,                                                & !! in 
                cospIN%frac_out,                                               & !! in
                cloudsatDBZe,                                                  & !! in
@@ -1788,6 +1797,7 @@ CONTAINS
                lsmallcot, mice, lsmallreff, lbigreff,                         & !! inout
                nmultilcld, nfracmulti, nhetcld, coldct, coldct_cal, calice,   & !! inout
                obs_ntotal, slwccot       )                                      !! inout
+          deallocate( modis_ctt )
        endif  !! use_vgrid or not
 
        ! Store, when necessary
@@ -1976,7 +1986,7 @@ CONTAINS
 
     if (Lmodis_subcolumn) then
        nullify(modisIN%Npoints,modisIN%Ncolumns,modisIN%Nlevels,modisIN%tau,modisIN%g,   &
-               modisIN%liqFrac,modisIN%w0)
+               modisIN%liqFrac,modisIN%w0,modisIN%at)
        if (allocated(modisIN%sunlit))    deallocate(modisIN%sunlit)
        if (allocated(modisIN%notSunlit)) deallocate(modisIN%notSunlit)
        if (allocated(modisIN%pres))      deallocate(modisIN%pres)
