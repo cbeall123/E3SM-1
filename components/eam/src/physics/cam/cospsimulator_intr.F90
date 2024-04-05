@@ -1079,6 +1079,16 @@ slwc_ncot_int = SLWC_NCOT
        ! float clrlmodis ( time, plev, tau, loc )
        call addfld ('CLRLMODIS',(/'cosp_tau_modis','cosp_reffliq  '/),'A','%','MODIS Cloud Area Fraction',            &
             flag_xyfill=.true., fill_value=R_UNDEF)
+       ! YQIN 04/04/23
+       ! float clmodis_liq ( time, plev, tau, loc )
+       call addfld ('CLMODIS_LIQ',(/'cosp_tau_modis','cosp_prs      '/),'A','%','MODIS Cloud Area Fraction only Liquid',            &
+            flag_xyfill=.true., fill_value=R_UNDEF)
+       ! float clmodis_ice ( time, plev, tau, loc )
+       call addfld ('CLMODIS_ICE',(/'cosp_tau_modis','cosp_prs      '/),'A','%','MODIS Cloud Area Fraction only Ice',            &
+            flag_xyfill=.true., fill_value=R_UNDEF)
+       ! float clmodis_lwpre ( time, plev, tau, loc )
+       call addfld ('CLMODIS_LWPR',(/'cosp_lwp_modis','cosp_reffliq  '/),'A','%','MODIS Cloud Area Fraction (LWP-RE histogram)',            &
+            flag_xyfill=.true., fill_value=R_UNDEF)
        
        !! add MODIS output to history file specified by the CAM namelist variable cosp_histfile_num
        call add_default ('CLTMODIS',cosp_histfile_num,' ')
@@ -1669,12 +1679,23 @@ slwc_ncot_int = SLWC_NCOT
          fname_misr=(/'CLD_MISR '/)
     ! MODIS outputs
     character(len=max_fieldname_len),dimension(nf_modis) :: &
-         fname_modis=(/'CLTMODIS    ','CLWMODIS    ','CLIMODIS    ','CLHMODIS    ','CLMMODIS    ',&
-                       'CLLMODIS    ','TAUTMODIS   ','TAUWMODIS   ','TAUIMODIS   ','TAUTLOGMODIS',&
-                       'TAUWLOGMODIS','TAUILOGMODIS','REFFCLWMODIS','REFFCLIMODIS',&
-                       'PCTMODIS    ','LWPMODIS    ','IWPMODIS    ','CLMODIS     ','CLRIMODIS   ',&
-                       'CLRLMODIS   ','REFFMODISL  ','REFFMODISI  ' /)
-    
+         fname_modis=(/'CLTMODIS      ','CLWMODIS      ','CLIMODIS      ','CLHMODIS      ','CLMMODIS      ',&
+                       'CLTMODISIC    ','CLWMODISIC    ','CLIMODISIC    ',&
+                       'CLLMODIS      ','TAUTMODIS     ','TAUWMODIS     ','TAUIMODIS     ','TAUTLOGMODIS  ',&
+                       'TAUWLOGMODIS  ','TAUILOGMODIS  ','REFFCLWMODIS  ','REFFCLIMODIS  ',&
+                       'PCTMODIS      ', &
+                       'TCTMODIS      ','NDMODIS_Q06   ','CLNDMODIS_Q06 ','TCTMODISIC    ','NDMODISIC_Q06 ',& ! YQIN
+                       'LWPMODIS_Q06  ','LWPMODISI_Q06 ', & ! YQIN 
+                       'TAUMODIS_Q06  ','REMODIS_Q06   ', & ! YQIN
+                       'NDMODIS_ALL   ','CLNDMODIS_ALL ','NDMODISIC_ALL ',& ! YQIN
+                       'LWPMODIS_ALL  ','LWPMODISI_ALL ', & ! YQIN 
+                       'TAUMODIS_ALL  ','REMODIS_ALL   ', & ! YQIN
+                       'CLNDMODISI_Q06','CLNDMODISI_ALL', & ! YQIN 
+                       'LWPMODIS      ','IWPMODIS      ','CLMODIS       ','CLRIMODIS     ',&
+                       'CLRLMODIS     ','REFFMODISL    ','REFFMODISI    ', &
+                       'CLMODIS_LIQ   ','CLMODIS_ICE   ','CLMODIS_LWPR  ' & ! YQIN 04/04/23
+                       /)
+
     logical :: run_radar(nf_radar,pcols)                 ! logical telling you if you should run radar simulator
     logical :: run_calipso(nf_calipso,pcols)                 ! logical telling you if you should run calipso simulator
     logical :: run_isccp(nf_isccp,pcols)                 ! logical telling you if you should run isccp simulator
