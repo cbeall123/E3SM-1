@@ -1023,6 +1023,7 @@ CONTAINS
              print*, "modis temp at Nlevel-5: ", modisIN%at(int(modisIN%sunlit(i)),modisIN%Nlevels-INT(5)) 
              print*, "modis temp at Nlevel-10: ", modisIN%at(int(modisIN%sunlit(i)),modisIN%Nlevels-INT(10))
              call modis_subcolumn(modisIN%Ncolumns,modisIN%Nlevels,modisIN%pres(i,:),    &
+                                  modisIN%temp(i,:),                                     & !YQIN
                                   modisIN%tau(int(modisIN%sunlit(i)),:,:),               &
                                   modisIN%liqFrac(int(modisIN%sunlit(i)),:,:),           &
                                   modisIN%g(int(modisIN%sunlit(i)),:,:),                 &
