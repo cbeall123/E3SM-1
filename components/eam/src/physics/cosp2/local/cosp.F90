@@ -1030,6 +1030,7 @@ CONTAINS
                                   modisIN%w0(int(modisIN%sunlit(i)),:,:),                &
                                   modisIN%at(int(modisIN%sunlit(i)),:),                  &
                                   isccp_boxptop(int(modisIN%sunlit(i)),:),               &
+                                  isccp_boxttop(int(modisIN%sunlit(i)),:),               &
                                   modisRetrievedPhase(i,:),                              &
                                   modisMultilCld(i,:),                                   &
                                   modisRetrievedCloudTopPressure(i,:),                   &
