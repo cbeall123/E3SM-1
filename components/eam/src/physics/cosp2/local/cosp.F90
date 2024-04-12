@@ -1019,9 +1019,9 @@ CONTAINS
 
           ! Call simulator
           do i = 1, modisIN%nSunlit
-             print*,"modis temp at Nlevel: ", modisIN%at(int(modisIN%sunlit(i)),modisIN%Nlevels)
-             print*, "modis temp at Nlevel-5: ", modisIN%at(int(modisIN%sunlit(i)),modisIN%Nlevels-INT(5)) 
-             print*, "modis temp at Nlevel-10: ", modisIN%at(int(modisIN%sunlit(i)),modisIN%Nlevels-INT(10))
+             !print*,"modis temp at Nlevel: ", modisIN%at(int(modisIN%sunlit(i)),modisIN%Nlevels)
+             !print*, "modis temp at Nlevel-5: ", modisIN%at(int(modisIN%sunlit(i)),modisIN%Nlevels-INT(5)) 
+             !print*, "modis temp at Nlevel-10: ", modisIN%at(int(modisIN%sunlit(i)),modisIN%Nlevels-INT(10))
              call modis_subcolumn(modisIN%Ncolumns,modisIN%Nlevels,modisIN%pres(i,:),    &
                                   modisIN%temp(i,:),                                     & !YQIN
                                   modisIN%tau(int(modisIN%sunlit(i)),:,:),               &

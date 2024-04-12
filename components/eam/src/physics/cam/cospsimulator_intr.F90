@@ -1045,6 +1045,12 @@ slwc_ncot_int = SLWC_NCOT
        call addfld ('CLWMODIS',horiz_only,'A','%','MODIS Liquid Cloud Fraction',flag_xyfill=.true., fill_value=R_UNDEF)
        ! float climodis ( time, loc )
        call addfld ('CLIMODIS',horiz_only,'A','%','MODIS Ice Cloud Fraction',flag_xyfill=.true., fill_value=R_UNDEF)
+       ! float cltmodisic ( time, loc )
+       call addfld ('CLTMODISIC',horiz_only,'A','%','In-cloud MODIS Total Cloud Fraction',flag_xyfill=.true., fill_value=R_UNDEF)
+       ! float clwmodisic ( time, loc )
+       call addfld ('CLWMODISIC',horiz_only,'A','%','In-cloud MODIS Liquid Cloud Fraction',flag_xyfill=.true., fill_value=R_UNDEF)
+       ! float climodisic ( time, loc )
+       call addfld ('CLIMODISIC',horiz_only,'A','%','In-cloud MODIS Ice Cloud Fraction',flag_xyfill=.true., fill_value=R_UNDEF)
        ! float clhmodis ( time, loc )
        call addfld ('CLHMODIS',horiz_only,'A','%','MODIS High Level Cloud Fraction',flag_xyfill=.true., fill_value=R_UNDEF)
        ! float clmmodis ( time, loc )
@@ -1136,11 +1142,15 @@ slwc_ncot_int = SLWC_NCOT
        ! float clmodis_lwpre ( time, plev, tau, loc )
        call addfld ('CLMODIS_LWPR',(/'cosp_lwp_modis','cosp_reffliq  '/),'A','%','MODIS Cloud Area Fraction (LWP-RE histogram)',            &
             flag_xyfill=.true., fill_value=R_UNDEF)
+
        
        !! add MODIS output to history file specified by the CAM namelist variable cosp_histfile_num
        call add_default ('CLTMODIS',cosp_histfile_num,' ')
        call add_default ('CLWMODIS',cosp_histfile_num,' ')
        call add_default ('CLIMODIS',cosp_histfile_num,' ')
+       call add_default ('CLTMODISIC',cosp_histfile_num,' ')
+       call add_default ('CLWMODISIC',cosp_histfile_num,' ')
+       call add_default ('CLIMODISIC',cosp_histfile_num,' ')
        call add_default ('CLHMODIS',cosp_histfile_num,' ')
        call add_default ('CLMMODIS',cosp_histfile_num,' ')
        call add_default ('CLLMODIS',cosp_histfile_num,' ')
@@ -1155,7 +1165,6 @@ slwc_ncot_int = SLWC_NCOT
        call add_default ('REFFMODISL',cosp_histfile_num, ' ')
        call add_default ('REFFMODISI',cosp_histfile_num, ' ')
        call add_default ('PCTMODIS',cosp_histfile_num,' ')
-
        ! YQIN
        call add_default ('TCTMODIS',cosp_histfile_num,' ')
        call add_default ('TCTMODISIC',cosp_histfile_num,' ')
@@ -1558,7 +1567,7 @@ slwc_ncot_int = SLWC_NCOT
   ! ######################################################################################
   ! SUBROUTINE cospsimulator_intr_run
   ! ######################################################################################
-  subroutine cospsimulator_intr_run(state,pbuf, cam_in,emis,coszrs,cld_swtau_in,snow_tau_in,snow_emis_in)    
+  subroutine cospsimulator_intr_run(state,pbuf, cam_in,emis,coszrs,aerindex_in,cld_swtau_in,snow_tau_in,snow_emis_in)    
     use physics_types,        only: physics_state
     use physics_buffer,       only: physics_buffer_desc, pbuf_get_field, pbuf_old_tim_idx
     use camsrfexch,           only: cam_in_t
@@ -1585,6 +1594,7 @@ slwc_ncot_int = SLWC_NCOT
     type(cam_in_t),      intent(in)         :: cam_in
     real(r8), intent(in) :: emis(pcols,pver)                  ! cloud longwave emissivity
     real(r8), intent(in) :: coszrs(pcols)                     ! cosine solar zenith angle (to tell if day or night)
+    real(r8), intent(in) :: aerindex_in(pcols)  ! PMA
     real(r8), intent(in),optional :: cld_swtau_in(pcols,pver) ! RRTM cld_swtau_in, read in using this variable
     real(r8), intent(in),optional :: snow_tau_in(pcols,pver)  ! RRTM grid-box mean SW snow optical depth, used for CAM5 simulations 
     real(r8), intent(in),optional :: snow_emis_in(pcols,pver) ! RRTM grid-box mean LW snow optical depth, used for CAM5 simulations 
@@ -1918,6 +1928,9 @@ slwc_ncot_int = SLWC_NCOT
     real(r8) :: cltmodis_ALL(pcols)
     real(r8) :: clwmodis(pcols)
     real(r8) :: climodis(pcols)
+    real(r8) :: cltmodisic(pcols)
+    real(r8) :: clwmodisic(pcols)
+    real(r8) :: climodisic(pcols)
     real(r8) :: clhmodis(pcols)
     real(r8) :: clmmodis(pcols)
     real(r8) :: cllmodis(pcols)
@@ -2251,6 +2264,9 @@ slwc_ncot_int = SLWC_NCOT
     cltmodis_ALL(1:pcols)                                = R_UNDEF
     clwmodis(1:pcols)                                = R_UNDEF
     climodis(1:pcols)                                = R_UNDEF
+    cltmodisic(1:pcols)                              = R_UNDEF
+    clwmodisic(1:pcols)                              = R_UNDEF
+    climodisic(1:pcols)                              = R_UNDEF
     clhmodis(1:pcols)                                = R_UNDEF
     clmmodis(1:pcols)                                = R_UNDEF
     cllmodis(1:pcols)                                = R_UNDEF
@@ -3818,7 +3834,31 @@ slwc_ncot_int = SLWC_NCOT
           reffmodisi(:ncol) = R_UNDEF
        end where
        call outfld('REFFMODISI',reffmodisi        ,pcols,lchnk)
+
+       where (reffclwmodis(:ncol) .eq. R_UNDEF) 
+          clwmodisic(:ncol) = R_UNDEF
+       elsewhere
+          !! cloud fraction with retrieved reffclwmodis
+          clwmodisic(:ncol) = clwmodis(:ncol)
+       end where
+       call outfld('CLWMODISIC',clwmodisic   ,pcols,lchnk)
        
+       where (reffclimodis(:ncol)  .eq. R_UNDEF)
+          climodisic(:ncol) = R_UNDEF
+       elsewhere
+          !! cloud fraction with retrieved reffclimodis
+          climodisic(:ncol) = climodis(:ncol)
+       end where
+       call outfld('CLIMODISIC',climodisic    ,pcols,lchnk)
+
+       where (tautmodis(:ncol) .eq. R_UNDEF)
+          cltmodisic(:ncol) = R_UNDEF
+       elsewhere
+          !! cloud fraction with retrieved tautmodis
+          cltmodisic(:ncol) = cltmodis(:ncol)
+       end where
+       call outfld('CLTMODISIC',cltmodisic    ,pcols,lchnk)
+ 
        where ((pctmodis(:ncol)  .eq. R_UNDEF) .or. ( cltmodis(:ncol) .eq. R_UNDEF))
           pctmodis(:ncol) = R_UNDEF
        elsewhere
