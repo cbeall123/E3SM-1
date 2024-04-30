@@ -313,7 +313,10 @@ MODULE MOD_COSP
      real(wp),pointer,dimension(:,:,:) ::  &
           modis_Optical_Thickness_vs_Cloud_Top_Pressure_Liq => null(), & ! Tau/Pressure Liq joint histogram
           modis_Optical_Thickness_vs_Cloud_Top_Pressure_Ice => null(), & ! Tau/Pressure Ice joint histogram
-          modis_LWP_vs_ReffLIQ => null()               ! LWP/ReffLIQ joint histogram
+          modis_LWP_vs_ReffLIQ => null(), &               ! LWP/ReffLIQ joint histogram
+          modis_LWP_vs_ReffLIQ_MaCST => null(), &         ! LWP/ReffLIQ joint histogram - MODIS-CloudSat SLWCs
+          modis_LWP_vs_ReffLIQ_MaCAL => null(), &         ! LWP/ReffLIQ joint histogram - MODIS and CALIPSO SLWCs
+          modis_LWP_vs_ReffLIQ_MoCAL => null()            ! LWP/ReffLIQ joint histogram - MODIS or CALIPSO SLWCs
 
      ! RTTOV outputs
      real(wp),pointer :: &
@@ -409,7 +412,7 @@ CONTAINS
          lrttov_cleanUp   = .false.
         
     integer, dimension(:,:),allocatable  :: &
-         modisRetrievedPhase,isccpLEVMATCH, modisMultilCld
+         modisRetrievedPhase,isccpLEVMATCH, modisMultilCld, slwc_comp_flag
     real(wp), dimension(:),  allocatable  :: &
          modisCfTotal,modisCfLiquid,modisMeanIceWaterPath, isccp_meantbclr,     &
          modisCfIce, modisCfHigh, modisCfMid, modisCfLow,modisMeanTauTotal,     &
@@ -442,6 +445,8 @@ CONTAINS
     REAL(WP), dimension(:,:,:),allocatable :: &
          modisJointHistogram,modisJointHistogramIce,modisJointHistogramLiq,     &
          modisJointHistogram_CtpCodLiq,modisJointHistogram_CtpCodIce,modisJointHistogram_LwpRefLiq, & ! YQIN 04/04/23
+         modisJointHistogram_LwpRefLiq_MaCST,modisJointHistogram_LwpRefLiq_MaCAL, & ! CMB 04/19/24
+         modisJointHistogram_LwpRefLiq_MoCAL,                                     & ! CMB 
          calipso_beta_tot,calipso_betaperp_tot, cloudsatDBZe,parasolPix_refl,   &
          grLidar532_beta_tot,atlid_beta_tot,cloudsatZe_non
     real(wp),dimension(:),allocatable,target :: &
@@ -820,6 +825,11 @@ CONTAINS
           allocate(modisIN%sunlit(modisIN%Nsunlit),modisIN%pres(modisIN%Nsunlit,cospIN%Nlevels+1))
           modisIN%sunlit    = pack((/ (i, i = 1, Npoints ) /),mask = cospgridIN%sunlit > 0)
           modisIN%pres      = cospgridIN%phalf(int(modisIN%sunlit(:)),:)
+
+          ! YQIN 01/18/22
+          allocate(modisIN%temp(modisIN%Nsunlit,cospIN%Nlevels))
+          modisIN%temp      = cospgridIN%at(int(modisIN%sunlit(:)),:)
+
        endif
        if (count(cospgridIN%sunlit <= 0) .gt. 0) then
           allocate(modisIN%notSunlit(count(cospgridIN%sunlit <= 0)))
@@ -1434,7 +1444,7 @@ CONTAINS
     if (Lmodis_column) then
        if(modisiN%nSunlit > 0) then
           ! Allocate space for local variables
-          allocate(modisCftotal(modisIN%nSunlit), modisCfLiquid(modisIN%nSunlit),        &
+          allocate(modisCfTotal(modisIN%nSunlit), modisCfLiquid(modisIN%nSunlit),        &
                    modisCfIce(modisIN%nSunlit),modisCfHigh(modisIN%nSunlit),             &
                    modisCfNd_Q06(modisIN%nSunlit),      & ! YQIN 
                    modisCfNd_ALL(modisIN%nSunlit),      & ! YQIN 02/24/29
@@ -1464,8 +1474,20 @@ CONTAINS
                    modisJointHistogram_CtpCodLiq(modisIN%nSunlit,numMODISTauBins,numMODISPresBins),& ! YQIN 04/04/23
                    modisJointHistogram_CtpCodIce(modisIN%nSunlit,numMODISTauBins,numMODISPresBins),& ! YQIN
                    modisJointHistogram_LwpRefLiq(modisIN%nSunlit,numMODISLWPBins,numMODISReffLiqBins), & ! YQIN
+                   modisJointHistogram_LwpRefLiq_MaCST(modisIN%nSunlit,numMODISLWPBins,numMODISReffLiqBins), & ! CMB 04/19/24
+                   modisJointHistogram_LwpRefLiq_MaCAL(modisIN%nSunlit,numMODISLWPBins,numMODISReffLiqBins), & ! CMB 04/19/24
+                   modisJointHistogram_LwpRefLiq_MoCAL(modisIN%nSunlit,numMODISLWPBins,numMODISReffLiqBins), & ! CMB 04/19/24
                    modisCloudMask(modisIN%nSunlit,modisIN%Ncolumns),&
-                   modisiceCloudMask(modisIN%nSunlit,modisIN%Ncolumns) )
+                   modisiceCloudMask(modisIN%nSunlit,modisIN%Ncolumns),&
+                   slwc_comp_flag(modisIN%nSunlit,modisIN%Ncolumns) )
+          
+          ! CMB - -4/25/24 initializing slwc_comp_flag
+          slwc_comp_flag(1:modisIN%nSunlit,1:modisIN%Ncolumns) = 0
+          
+          !print *, "Elements in dimension 1:", size(slwc_comp_flag, 1)
+          !print *, "Elements in dimension 2:", size(slwc_comp_flag, 2)
+          !print *, "slwc_comp_flag values: ", slwc_comp_flag(1,1:nSubCols)
+
           ! Call simulator
           call modis_column(modisIN%nSunlit, modisIN%Ncolumns,modisRetrievedPhase,       &
                              modisRetrievedCloudTopPressure, &
@@ -1479,7 +1501,9 @@ CONTAINS
                              modisRetrievedCloudTopTau_ALL, & ! YQIN
                              modisRetrievedCloudTopSize_ALL, & ! YQIN
                              modisRetrievedTau,           &
-                             modisRetrievedSize, modisCfTotal, modisCfLiquid, modisCfIce,&
+                             modisRetrievedSize, &
+                             slwc_comp_flag,     & ! CMB 04/19/24
+                             modisCfTotal, modisCfLiquid, modisCfIce,&
                              modisCfNd_Q06, & ! YQIN 
                              modisCfNd_ALL, & ! YQIN 02/29/24
                              modisCfHigh, modisCfMid, modisCfLow, modisMeanTauTotal,     &
@@ -1502,6 +1526,9 @@ CONTAINS
                              modisJointHistogram_CtpCodLiq, & ! YQIN 04/04/23
                              modisJointHistogram_CtpCodIce, & ! YQIN
                              modisJointHistogram_LwpRefLiq,  & ! YQIN
+                             modisJointHistogram_LwpRefLiq_MaCST,  & ! CMB 04/19/24
+                             modisJointHistogram_LwpRefLiq_MaCAL,  & ! CMB
+                             modisJointHistogram_LwpRefLiq_MoCAL,  & ! CMB
                              modisCloudMask,modisiceCloudMask)
           ! Store data (if requested)
           if (associated(cospOUT%modis_Cloud_Fraction_Total_Mean)) then
@@ -1797,25 +1824,26 @@ CONTAINS
           if (associated(cospOUT%modis_Optical_Thickness_vs_Cloud_Top_Pressure))         &
              cospOUT%modis_Optical_Thickness_vs_Cloud_Top_Pressure(ij:ik, :, :) = R_UNDEF
        endif
-       ! Free up memory (if necessary)
-       if (allocated(modisRetrievedTau))               deallocate(modisRetrievedTau)
-       if (allocated(modisRetrievedSize))              deallocate(modisRetrievedSize)
-       if (allocated(modisRetrievedPhase))             deallocate(modisRetrievedPhase)
-       if (allocated(modisRetrievedCloudTopPressure))  deallocate(modisRetrievedCloudTopPressure)
+       ! Free up memory (if necessary), CMB 4/19/24 - keeping modis_subcolumn outputs for 2nd call to 
+       ! modis_column below 
+       !if (allocated(modisRetrievedTau))               deallocate(modisRetrievedTau)
+       !if (allocated(modisRetrievedSize))              deallocate(modisRetrievedSize)
+       !if (allocated(modisRetrievedPhase))             deallocate(modisRetrievedPhase)
+       !if (allocated(modisRetrievedCloudTopPressure))  deallocate(modisRetrievedCloudTopPressure)
        if (allocated(modisCloudMask))                  deallocate(modisCloudMask)
        ! YQIN 
-       if (allocated(modisRetrievedCloudTopTemperature))       deallocate(modisRetrievedCloudTopTemperature) 
-       if (allocated(modisRetrievedCloudTopNd_Q06))            deallocate(modisRetrievedCloudTopNd_Q06)
-       if (allocated(modisRetrievedCloudTopLWP_Q06))           deallocate(modisRetrievedCloudTopLWP_Q06)
-       if (allocated(modisRetrievedCloudTopTau_Q06))           deallocate(modisRetrievedCloudTopTau_Q06)
-       if (allocated(modisRetrievedCloudTopSize_Q06))          deallocate(modisRetrievedCloudTopSize_Q06)
-       if (allocated(modisRetrievedCloudTopNd_ALL))            deallocate(modisRetrievedCloudTopNd_ALL)
-       if (allocated(modisRetrievedCloudTopLWP_ALL))           deallocate(modisRetrievedCloudTopLWP_ALL)
-       if (allocated(modisRetrievedCloudTopTau_ALL))           deallocate(modisRetrievedCloudTopTau_ALL)
-       if (allocated(modisRetrievedCloudTopSize_ALL))          deallocate(modisRetrievedCloudTopSize_ALL)
+       !if (allocated(modisRetrievedCloudTopTemperature))       deallocate(modisRetrievedCloudTopTemperature) 
+       !if (allocated(modisRetrievedCloudTopNd_Q06))            deallocate(modisRetrievedCloudTopNd_Q06)
+       !if (allocated(modisRetrievedCloudTopLWP_Q06))           deallocate(modisRetrievedCloudTopLWP_Q06)
+       !if (allocated(modisRetrievedCloudTopTau_Q06))           deallocate(modisRetrievedCloudTopTau_Q06)
+       !if (allocated(modisRetrievedCloudTopSize_Q06))          deallocate(modisRetrievedCloudTopSize_Q06)
+       !if (allocated(modisRetrievedCloudTopNd_ALL))            deallocate(modisRetrievedCloudTopNd_ALL)
+       !if (allocated(modisRetrievedCloudTopLWP_ALL))           deallocate(modisRetrievedCloudTopLWP_ALL)
+       !if (allocated(modisRetrievedCloudTopTau_ALL))           deallocate(modisRetrievedCloudTopTau_ALL)
+       !if (allocated(modisRetrievedCloudTopSize_ALL))          deallocate(modisRetrievedCloudTopSize_ALL)
 
        if (allocated(modisiceCloudMask))               deallocate(modisiceCloudMask)
-       if (allocated(modisCftotal))                    deallocate(modisCftotal)
+       if (allocated(modisCfTotal))                    deallocate(modisCfTotal)
        if (allocated(modisCfLiquid))                   deallocate(modisCfLiquid)
        if (allocated(modisCfIce))                      deallocate(modisCfIce)
        ! YQIN 
@@ -1854,6 +1882,11 @@ CONTAINS
        if (allocated(modisJointHistogram_CtpCodLiq))   deallocate(modisJointHistogram_CtpCodLiq)
        if (allocated(modisJointHistogram_CtpCodIce))   deallocate(modisJointHistogram_CtpCodIce)
        if (allocated(modisJointHistogram_LwpRefLiq))   deallocate(modisJointHistogram_LwpRefLiq)
+
+       ! CMB 04/19/24
+       if (allocated(modisJointHistogram_LwpRefLiq_MaCST)) deallocate(modisJointHistogram_LwpRefLiq_MaCST)
+       if (allocated(modisJointHistogram_LwpRefLiq_MaCAL)) deallocate(modisJointHistogram_LwpRefLiq_MaCAL)
+       if (allocated(modisJointHistogram_LwpRefLiq_MoCAL)) deallocate(modisJointHistogram_LwpRefLiq_MoCAL)
 
        if (allocated(isccp_boxttop))                   deallocate(isccp_boxttop)
        if (allocated(isccp_boxptop))                   deallocate(isccp_boxptop)
@@ -1964,6 +1997,7 @@ CONTAINS
        allocate( calice(cloudsatIN%Npoints) )
        allocate( obs_ntotal(cloudsatIN%Npoints, NOBSTYPE) )
        allocate( slwccot(cloudsatIN%Npoints, SLWC_NCOT,COT_NCLASS) )
+       !allocate( slwc_comp_flag(cloudsatIN%Npoints,cloudsatIN%Ncolumns) )
 
        if ( use_vgrid ) then
           !! interporation for fixed vertical grid:
@@ -1986,6 +2020,9 @@ CONTAINS
                t_in(:,:,cloudsatIN%Nlevels:1:-1), Nlvgrid,                    &
                vgrid_zl(Nlvgrid:1:-1), vgrid_zu(Nlvgrid:1:-1),                &
                tempI(:,:,Nlvgrid:1:-1)                                        )
+          print *, "Elements in dimension 1, temp I:", size(tempI, 1)
+          print *, "Elements in dimension 2, tempI :", size(tempI, 2)
+          print *, "Elements in dimension 3, tempI :", size(tempI, 3)
           call cosp_change_vertical_grid (                                    &
                cloudsatIN%Npoints, cloudsatIN%Ncolumns, cloudsatIN%Nlevels,   &
                cospgridIN%hgt_matrix(:,cloudsatIN%Nlevels:1:-1),              &
@@ -2036,7 +2073,7 @@ CONTAINS
                cfodd_ntotal, wr_occfreq_ntotal,                               & !! inout
                lsmallcot, mice, lsmallreff, lbigreff,                         & !! inout
                nmultilcld, nfracmulti, nhetcld, coldct, coldct_cal, calice,   & !! inout
-               obs_ntotal, slwccot       )                                     !! inout
+               obs_ntotal, slwccot, slwc_comp_flag  )                           !! inout
           deallocate( zlev, t_in, tempI, frac_outI, Ze_totI, modis_ctt )
        else  ! do not use vgrid interporation ---------------------------------------!
           !! original model grid
@@ -2061,7 +2098,7 @@ CONTAINS
                cfodd_ntotal, wr_occfreq_ntotal,                               & !! inout
                lsmallcot, mice, lsmallreff, lbigreff,                         & !! inout
                nmultilcld, nfracmulti, nhetcld, coldct, coldct_cal, calice,   & !! inout
-               obs_ntotal, slwccot       )                                      !! inout
+               obs_ntotal, slwccot, slwc_comp_flag       )                      !! inout
           deallocate( modis_ctt )
        endif  !! use_vgrid or not
 
@@ -2208,6 +2245,178 @@ CONTAINS
         endif
     endif
 
+
+        ! CMB - 4/19/24 2nd call to modis_column to get SLWC specific histograms needed for 
+        ! MODIS radiative kernel
+
+    if (Lmodis_column) then
+       if(modisiN%nSunlit > 0) then
+          ! Allocate space for local variables
+          allocate(modisCfTotal(modisIN%nSunlit), modisCfLiquid(modisIN%nSunlit),        &
+                   modisCfIce(modisIN%nSunlit),modisCfHigh(modisIN%nSunlit),             &
+                   modisCfNd_Q06(modisIN%nSunlit),      & ! YQIN
+                   modisCfNd_ALL(modisIN%nSunlit),      & ! YQIN 02/24/29
+                   modisCfMid(modisIN%nSunlit),modisCfLow(modisIN%nSunlit),              &
+                   modisMeanTauTotal(modisIN%nSunlit),                                   &
+                   modisMeanTauLiquid(modisIN%nSunlit),modisMeanTauIce(modisIN%nSunlit), &
+                   modisMeanLogTauTotal(modisIN%nSunlit),                                &
+                   modisMeanLogTauLiquid(modisIN%nSunlit),                               &
+                   modisMeanLogTauIce(modisIN%nSunlit),                                  &
+                   modisMeanSizeLiquid(modisIN%nSunlit),                                 &
+                   modisMeanSizeIce(modisIN%nSunlit),                                    &
+                   modisMeanCloudTopPressure(modisIN%nSunlit),                           &
+                   modisMeanCloudTopTemperature(modisIN%nSunlit),                           & ! YQIN
+                   modisMeanCloudTopNd_Q06(modisIN%nSunlit),                           & ! YQIN
+                   modisMeanCloudTopLWP_Q06(modisIN%nSunlit),                                & ! YQIN
+                   modisMeanCloudTopTau_Q06(modisIN%nSunlit),                                & ! YQIN
+                   modisMeanCloudTopSize_Q06(modisIN%nSunlit),                                & ! YQIN
+                   modisMeanCloudTopNd_ALL(modisIN%nSunlit),                           & ! YQIN 02/29/24
+                   modisMeanCloudTopLWP_ALL(modisIN%nSunlit),                                & ! YQIN
+                   modisMeanCloudTopTau_ALL(modisIN%nSunlit),                                & ! YQIN
+                   modisMeanCloudTopSize_ALL(modisIN%nSunlit),                                & ! YQIN
+                   modisMeanLiquidWaterPath(modisIN%nSunlit),                            &
+                   modisMeanIceWaterPath(modisIN%nSunlit),                               &
+                   modisJointHistogram(modisIN%nSunlit,numMODISTauBins,numMODISPresBins),&
+                   modisJointHistogramIce(modisIN%nSunlit,numModisTauBins,numMODISReffIceBins),&
+                   modisJointHistogramLiq(modisIN%nSunlit,numModisTauBins,numMODISReffLiqBins),&
+                   modisJointHistogram_CtpCodLiq(modisIN%nSunlit,numMODISTauBins,numMODISPresBins),& ! YQIN 04/04/23
+                   modisJointHistogram_CtpCodIce(modisIN%nSunlit,numMODISTauBins,numMODISPresBins),& ! YQIN
+                   modisJointHistogram_LwpRefLiq(modisIN%nSunlit,numMODISLWPBins,numMODISReffLiqBins), & ! YQIN
+                   modisJointHistogram_LwpRefLiq_MaCST(modisIN%nSunlit,numMODISLWPBins,numMODISReffLiqBins), & ! CMB 04/19/24
+                   modisJointHistogram_LwpRefLiq_MaCAL(modisIN%nSunlit,numMODISLWPBins,numMODISReffLiqBins), & ! CMB 04/19/24
+                   modisJointHistogram_LwpRefLiq_MoCAL(modisIN%nSunlit,numMODISLWPBins,numMODISReffLiqBins), & ! CMB 04/19/24
+                   modisCloudMask(modisIN%nSunlit,modisIN%Ncolumns),&
+                   modisiceCloudMask(modisIN%nSunlit,modisIN%Ncolumns) )
+          ! Call simulator
+          call modis_column(modisIN%nSunlit, modisIN%Ncolumns,modisRetrievedPhase,       &
+                             modisRetrievedCloudTopPressure, &
+                             modisRetrievedCloudTopTemperature, & ! YQIN
+                             modisRetrievedCloudTopNd_Q06, & ! YQIN
+                             modisRetrievedCloudTopLWP_Q06, & ! YQIN
+                             modisRetrievedCloudTopTau_Q06, & ! YQIN
+                             modisRetrievedCloudTopSize_Q06, & ! YQIN
+                             modisRetrievedCloudTopNd_ALL, & ! YQIN 02/29/24
+                             modisRetrievedCloudTopLWP_ALL, & ! YQIN
+                             modisRetrievedCloudTopTau_ALL, & ! YQIN
+                             modisRetrievedCloudTopSize_ALL, & ! YQIN
+                             modisRetrievedTau,           &
+                             modisRetrievedSize,          &
+                             slwc_comp_flag,              &    ! CMB 04/19/24
+                             modisCfTotal, modisCfLiquid, modisCfIce,&
+                             modisCfNd_Q06, & ! YQIN
+                             modisCfNd_ALL, & ! YQIN 02/29/24
+                             modisCfHigh, modisCfMid, modisCfLow, modisMeanTauTotal,     &
+                             modisMeanTauLiquid, modisMeanTauIce, modisMeanLogTauTotal,  &
+                             modisMeanLogTauLiquid, modisMeanLogTauIce,                  &
+                             modisMeanSizeLiquid, modisMeanSizeIce,                      &
+                             modisMeanCloudTopPressure, &
+                             modisMeanCloudTopTemperature, & ! YQIN
+                             modisMeanCloudTopNd_Q06, & ! YQIN
+                             modisMeanCloudTopLWP_Q06, & ! YQIN
+                             modisMeanCloudTopTau_Q06, & ! YQIN
+                             modisMeanCloudTopSize_Q06, & ! YQIN
+                             modisMeanCloudTopNd_ALL, & ! YQIN 02/29/24
+                             modisMeanCloudTopLWP_ALL, & ! YQIN
+                             modisMeanCloudTopTau_ALL, & ! YQIN
+                             modisMeanCloudTopSize_ALL, & ! YQIN
+                             modisMeanLiquidWaterPath,        &
+                             modisMeanIceWaterPath, modisJointHistogram,                 &
+                             modisJointHistogramIce,modisJointHistogramLiq,              &
+                             modisJointHistogram_CtpCodLiq, & ! YQIN 04/04/23
+                             modisJointHistogram_CtpCodIce, & ! YQIN
+                             modisJointHistogram_LwpRefLiq,  & ! YQIN
+                             modisJointHistogram_LwpRefLiq_MaCST, & ! CMB 04/19/24
+                             modisJointHistogram_LwpRefLiq_MaCAL, & ! CMB 04/19/24
+                             modisJointHistogram_LwpRefLiq_MoCAL, & ! CMB 04/19/24
+                             modisCloudMask,modisiceCloudMask)
+          ! Assign to output structuremodis
+          if (associated(cospOUT%modis_LWP_vs_ReffLIQ_MaCST)) then          
+             cospOUT%modis_LWP_vs_ReffLIQ_MaCST(ij+int(modisIN%sunlit(:))-1, 1:numMODISLWPBins,:) = &
+                modisJointHistogram_LwpRefLiq_MaCST(:,:,:)
+          endif
+          if (associated(cospOUT%modis_LWP_vs_ReffLIQ_MaCAL)) then
+             cospOUT%modis_LWP_vs_ReffLIQ_MaCAL(ij+int(modisIN%sunlit(:))-1, 1:numMODISLWPBins,:) = &
+                modisJointHistogram_LwpRefLiq_MaCAL(:,:,:)
+          endif
+          if (associated(cospOUT%modis_LWP_vs_ReffLIQ_MoCAL)) then
+             cospOUT%modis_LWP_vs_ReffLIQ_MoCAL(ij+int(modisIN%sunlit(:))-1, 1:numMODISLWPBins,:) = &
+                modisJointHistogram_LwpRefLiq_MoCAL(:,:,:)
+          endif
+          ! Free up memory
+          if (allocated(modisRetrievedTau))               deallocate(modisRetrievedTau)
+          if (allocated(modisRetrievedSize))              deallocate(modisRetrievedSize)
+          if (allocated(modisRetrievedPhase))             deallocate(modisRetrievedPhase)
+          if (allocated(modisRetrievedCloudTopPressure))  deallocate(modisRetrievedCloudTopPressure)
+          if (allocated(modisCloudMask))                  deallocate(modisCloudMask)
+          if (allocated(slwc_comp_flag))                  deallocate(slwc_comp_flag)
+          ! YQIN
+          if (allocated(modisRetrievedCloudTopTemperature))       deallocate(modisRetrievedCloudTopTemperature)
+          if (allocated(modisRetrievedCloudTopNd_Q06))            deallocate(modisRetrievedCloudTopNd_Q06)
+          if (allocated(modisRetrievedCloudTopLWP_Q06))           deallocate(modisRetrievedCloudTopLWP_Q06)
+          if (allocated(modisRetrievedCloudTopTau_Q06))           deallocate(modisRetrievedCloudTopTau_Q06)
+          if (allocated(modisRetrievedCloudTopSize_Q06))          deallocate(modisRetrievedCloudTopSize_Q06)
+          if (allocated(modisRetrievedCloudTopNd_ALL))            deallocate(modisRetrievedCloudTopNd_ALL)
+          if (allocated(modisRetrievedCloudTopLWP_ALL))           deallocate(modisRetrievedCloudTopLWP_ALL)
+          if (allocated(modisRetrievedCloudTopTau_ALL))           deallocate(modisRetrievedCloudTopTau_ALL)
+          if (allocated(modisRetrievedCloudTopSize_ALL))          deallocate(modisRetrievedCloudTopSize_ALL)
+
+          if (allocated(modisiceCloudMask))               deallocate(modisiceCloudMask)
+          if (allocated(modisCfTotal))                    deallocate(modisCfTotal)
+          if (allocated(modisCfLiquid))                   deallocate(modisCfLiquid)
+          if (allocated(modisCfIce))                      deallocate(modisCfIce)
+          ! YQIN
+          if (allocated(modisCfNd_Q06))                   deallocate(modisCfNd_Q06)
+          if (allocated(modisCfNd_ALL))                   deallocate(modisCfNd_ALL)
+          if (allocated(modisCfHigh))                     deallocate(modisCfHigh)
+          if (allocated(modisCfMid))                      deallocate(modisCfMid)
+          if (allocated(modisCfLow))                      deallocate(modisCfLow)
+          if (allocated(modisMeanTauTotal))               deallocate(modisMeanTauTotal)
+          if (allocated(modisMeanTauLiquid))              deallocate(modisMeanTauLiquid)
+          if (allocated(modisMeanTauIce))                 deallocate(modisMeanTauIce)
+          if (allocated(modisMeanLogTauTotal))            deallocate(modisMeanLogTauTotal)
+          if (allocated(modisMeanLogTauLiquid))           deallocate(modisMeanLogTauLiquid)
+          if (allocated(modisMeanLogTauIce))              deallocate(modisMeanLogTauIce)
+          if (allocated(modisMeanSizeLiquid))             deallocate(modisMeanSizeLiquid)
+          if (allocated(modisMeanSizeIce))                deallocate(modisMeanSizeIce)
+          if (allocated(modisMeanCloudTopPressure))       deallocate(modisMeanCloudTopPressure)
+
+          ! YQIN
+          if (allocated(modisMeanCloudTopTemperature))       deallocate(modisMeanCloudTopTemperature)
+          if (allocated(modisMeanCloudTopNd_Q06))       deallocate(modisMeanCloudTopNd_Q06)
+          if (allocated(modisMeanCloudTopLWP_Q06))            deallocate(modisMeanCloudTopLWP_Q06)
+          if (allocated(modisMeanCloudTopTau_Q06))            deallocate(modisMeanCloudTopTau_Q06)
+          if (allocated(modisMeanCloudTopSize_Q06))            deallocate(modisMeanCloudTopSize_Q06)
+          if (allocated(modisMeanCloudTopNd_ALL))       deallocate(modisMeanCloudTopNd_ALL)
+          if (allocated(modisMeanCloudTopLWP_ALL))            deallocate(modisMeanCloudTopLWP_ALL)
+          if (allocated(modisMeanCloudTopTau_ALL))            deallocate(modisMeanCloudTopTau_ALL)
+          if (allocated(modisMeanCloudTopSize_ALL))            deallocate(modisMeanCloudTopSize_ALL)
+          if (allocated(modisMeanLiquidWaterPath))        deallocate(modisMeanLiquidWaterPath)
+          if (allocated(modisMeanIceWaterPath))           deallocate(modisMeanIceWaterPath)
+          if (allocated(modisJointHistogram))             deallocate(modisJointHistogram)
+          if (allocated(modisJointHistogramIce))          deallocate(modisJointHistogramIce)
+          if (allocated(modisJointHistogramLiq))          deallocate(modisJointHistogramLiq)
+
+
+          ! YQIN 04/04/23
+          if (allocated(modisJointHistogram_CtpCodLiq))   deallocate(modisJointHistogram_CtpCodLiq)
+          if (allocated(modisJointHistogram_CtpCodIce))   deallocate(modisJointHistogram_CtpCodIce)
+          if (allocated(modisJointHistogram_LwpRefLiq))   deallocate(modisJointHistogram_LwpRefLiq)
+
+          ! CMB 04/19/24
+          if (allocated(modisJointHistogram_LwpRefLiq_MaCST)) deallocate(modisJointHistogram_LwpRefLiq_MaCST)
+          if (allocated(modisJointHistogram_LwpRefLiq_MaCAL)) deallocate(modisJointHistogram_LwpRefLiq_MaCAL)
+          if (allocated(modisJointHistogram_LwpRefLiq_MoCAL)) deallocate(modisJointHistogram_LwpRefLiq_MoCAL)
+
+          ! YQIN
+          if (allocated(isccp_boxttop))                   deallocate(isccp_boxttop)
+          if (allocated(isccp_boxptop))                   deallocate(isccp_boxptop)
+          if (allocated(isccp_boxtau))                    deallocate(isccp_boxtau)
+          if (allocated(isccp_meantbclr))                 deallocate(isccp_meantbclr)
+          if (allocated(isccpLEVMATCH))                   deallocate(isccpLEVMATCH)
+          
+      endif
+
+    endif
     !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     ! 7) Cleanup
     !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2255,6 +2464,8 @@ CONTAINS
        if (allocated(modisIN%sunlit))    deallocate(modisIN%sunlit)
        if (allocated(modisIN%notSunlit)) deallocate(modisIN%notSunlit)
        if (allocated(modisIN%pres))      deallocate(modisIN%pres)
+       ! YQIN 01/18/22
+       if (allocated(modisIN%temp))      deallocate(modisIN%temp)
     endif
 
     if (allocated(modisMultilCld))        deallocate(modisMultilCld)
@@ -3040,6 +3251,13 @@ CONTAINS
                cospOUT%modis_Optical_Thickness_vs_Cloud_Top_Pressure_Ice(:,:,:) = R_UNDEF
           if (associated(cospOUT%modis_LWP_vs_ReffLIQ))            &
                cospOUT%modis_LWP_vs_ReffLIQ(:,:,:) = R_UNDEF
+          ! CMB 04/19/24
+          if (associated(cospOUT%modis_LWP_vs_ReffLIQ_MaCST))            &
+               cospOUT%modis_LWP_vs_ReffLIQ_MaCST(:,:,:) = R_UNDEF
+          if (associated(cospOUT%modis_LWP_vs_ReffLIQ_MaCAL))            &
+               cospOUT%modis_LWP_vs_ReffLIQ_MaCAL(:,:,:) = R_UNDEF
+          if (associated(cospOUT%modis_LWP_vs_ReffLIQ_MoCAL))            &
+               cospOUT%modis_LWP_vs_ReffLIQ_MoCAL(:,:,:) = R_UNDEF
 
           ! Also, turn-off joint-products 
           if (Lcloudsat_modis_wr) then
@@ -3287,6 +3505,13 @@ CONTAINS
                cospOUT%modis_Optical_Thickness_vs_Cloud_Top_Pressure_Ice(:,:,:) = R_UNDEF
           if (associated(cospOUT%modis_LWP_vs_ReffLIQ))            &
                cospOUT%modis_LWP_vs_ReffLIQ(:,:,:) = R_UNDEF
+          ! CMB 04/19/24
+          if (associated(cospOUT%modis_LWP_vs_ReffLIQ_MaCST))            &
+               cospOUT%modis_LWP_vs_ReffLIQ_MaCST(:,:,:) = R_UNDEF
+          if (associated(cospOUT%modis_LWP_vs_ReffLIQ_MaCAL))            &
+               cospOUT%modis_LWP_vs_ReffLIQ_MaCAL(:,:,:) = R_UNDEF
+          if (associated(cospOUT%modis_LWP_vs_ReffLIQ_MoCAL))            &
+               cospOUT%modis_LWP_vs_ReffLIQ_MoCAL(:,:,:) = R_UNDEF
 
           if (associated(cospOUT%cfodd_ntotal)) cospOUT%cfodd_ntotal(:,:,:,:) = R_UNDEF
           if (associated(cospOUT%wr_occfreq_ntotal)) cospOUT%wr_occfreq_ntotal(:,:) = R_UNDEF
@@ -3487,6 +3712,13 @@ CONTAINS
                cospOUT%modis_Optical_Thickness_vs_Cloud_Top_Pressure_Ice(:,:,:) = R_UNDEF
           if (associated(cospOUT%modis_LWP_vs_ReffLIQ))            &
                cospOUT%modis_LWP_vs_ReffLIQ(:,:,:) = R_UNDEF
+          ! CMB 04/19/24
+          if (associated(cospOUT%modis_LWP_vs_ReffLIQ_MaCST))            &
+               cospOUT%modis_LWP_vs_ReffLIQ_MaCST(:,:,:) = R_UNDEF
+          if (associated(cospOUT%modis_LWP_vs_ReffLIQ_MaCAL))            &
+               cospOUT%modis_LWP_vs_ReffLIQ_MaCAL(:,:,:) = R_UNDEF
+          if (associated(cospOUT%modis_LWP_vs_ReffLIQ_MoCAL))            &
+               cospOUT%modis_LWP_vs_ReffLIQ_MoCAL(:,:,:) = R_UNDEF
 
           if (associated(cospOUT%modis_Optical_Thickness_vs_ReffICE))                       &
                cospOUT%modis_Optical_Thickness_vs_ReffICE(:,:,:)            = R_UNDEF
@@ -3874,6 +4106,14 @@ CONTAINS
           if (associated(cospOUT%modis_LWP_vs_ReffLIQ))            &
                cospOUT%modis_LWP_vs_ReffLIQ(:,:,:) = R_UNDEF
 
+          ! CMB 04/19/24
+          if (associated(cospOUT%modis_LWP_vs_ReffLIQ_MaCST))            &
+               cospOUT%modis_LWP_vs_ReffLIQ_MaCST(:,:,:) = R_UNDEF
+          if (associated(cospOUT%modis_LWP_vs_ReffLIQ_MaCAL))            &
+               cospOUT%modis_LWP_vs_ReffLIQ_MaCAL(:,:,:) = R_UNDEF
+          if (associated(cospOUT%modis_LWP_vs_ReffLIQ_MoCAL))            &
+               cospOUT%modis_LWP_vs_ReffLIQ_MoCAL(:,:,:) = R_UNDEF
+
 
           if (associated(cospOUT%modis_Optical_Thickness_vs_ReffICE))                       &
                cospOUT%modis_Optical_Thickness_vs_ReffICE(:,:,:)            = R_UNDEF
@@ -3979,6 +4219,14 @@ CONTAINS
           if (associated(cospOUT%modis_LWP_vs_ReffLIQ))            &
                cospOUT%modis_LWP_vs_ReffLIQ(:,:,:) = R_UNDEF
 
+          ! CMB 04/19/24
+          if (associated(cospOUT%modis_LWP_vs_ReffLIQ_MaCST))            &
+               cospOUT%modis_LWP_vs_ReffLIQ_MaCST(:,:,:) = R_UNDEF
+          if (associated(cospOUT%modis_LWP_vs_ReffLIQ_MaCAL))            &
+               cospOUT%modis_LWP_vs_ReffLIQ_MaCAL(:,:,:) = R_UNDEF
+          if (associated(cospOUT%modis_LWP_vs_ReffLIQ_MoCAL))            &
+               cospOUT%modis_LWP_vs_ReffLIQ_MoCAL(:,:,:) = R_UNDEF
+
        endif
        if (any(cospIN%ss_alb .lt. 0 .OR. cospIN%ss_alb .gt. 1)) then
           nError=nError+1
@@ -4058,8 +4306,16 @@ CONTAINS
                cospOUT%modis_Optical_Thickness_vs_Cloud_Top_Pressure_Liq(:,:,:) = R_UNDEF
           if (associated(cospOUT%modis_Optical_Thickness_vs_Cloud_Top_Pressure_Ice))            &
                cospOUT%modis_Optical_Thickness_vs_Cloud_Top_Pressure_Ice(:,:,:) = R_UNDEF
-          if (associated(cospOUT%modis_LWP_vs_ReffLIQ))            &
+          if (associated(cospOUT%modis_LWP_vs_ReffLIQ))                  &
                cospOUT%modis_LWP_vs_ReffLIQ(:,:,:) = R_UNDEF
+
+          ! CMB 04/19/24
+          if (associated(cospOUT%modis_LWP_vs_ReffLIQ_MaCST))            &
+               cospOUT%modis_LWP_vs_ReffLIQ_MaCST(:,:,:) = R_UNDEF
+          if (associated(cospOUT%modis_LWP_vs_ReffLIQ_MaCAL))            &
+               cospOUT%modis_LWP_vs_ReffLIQ_MaCAL(:,:,:) = R_UNDEF
+          if (associated(cospOUT%modis_LWP_vs_ReffLIQ_MoCAL))            &
+               cospOUT%modis_LWP_vs_ReffLIQ_MoCAL(:,:,:) = R_UNDEF
 
        endif
     endif
